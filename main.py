@@ -1,5 +1,5 @@
 from telepot.loop import MessageLoop
-import telepot, time
+import telepot
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 
 
@@ -15,20 +15,13 @@ class EasyCollect_Bot(object):
 
 	def handler(self, msg):
 		chat_id = msg['chat']['id']
-		first_name = msg['from']['first_name']
-		last_name = msg['from']['last_name']
-		message_send = msg['text']
-		msgToSend = "*Ciao " + first_name + " " +  last_name + "*, per caso mi hai inviato *" + message_send + "*?"
-		
-
-		self.bot.sendMessage(chat_id, msgToSend, parse_mode = 'Markdown')
+		print(chat_id)
 
 
 
 	def main(self):
 		print("Bot in Loop...")
 		MessageLoop(self.bot, self.handler).run_as_thread()
-
 
 		while 1:
 			time.sleep(1)
@@ -38,3 +31,4 @@ class EasyCollect_Bot(object):
 if __name__ == '__main__':
 	botInstance = EasyCollect_Bot()
 	botInstance.main()
+		
