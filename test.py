@@ -8,24 +8,7 @@ from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboar
 from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton
 from telepot.namedtuple import InlineQueryResultArticle, InlineQueryResultPhoto, InputTextMessageContent
 
-"""
-$ python3.5 skeletona_route.py <token>
-It demonstrates:
-- passing a routing table to `MessageLoop` to filter flavors.
-- the use of custom keyboard and inline keyboard, and their various buttons.
-Remember to `/setinline` and `/setinlinefeedback` to enable inline mode for your bot.
-It works like this:
-- First, you send it one of these 4 characters - `c`, `i`, `h`, `f` - and it replies accordingly:
-    - `c` - a custom keyboard with various buttons
-    - `i` - an inline keyboard with various buttons
-    - `h` - hide custom keyboard
-    - `f` - force reply
-- Press various buttons to see their effects
-- Within inline mode, what you get back depends on the **last character** of the query:
-    - `a` - a list of articles
-    - `p` - a list of photos
-    - `b` - to see a button above the inline results to switch back to a private chat with the bot
-"""
+
 
 message_with_inline_keyboard = None
 
