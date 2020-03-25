@@ -14,7 +14,7 @@
 - Il bot gli risponde con un token (anche tranquillamente un numero random (qualsiasi cosa)) da dare ai suoi clienti
 - Salvataggio credenziali utente su file
 - Inserisco una lista della merce che ho ("q per terminare")
-	
+
 ## Cliente
 
 Come interagisco con il commerciante?
