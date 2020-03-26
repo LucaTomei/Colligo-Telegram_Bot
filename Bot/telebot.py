@@ -15,6 +15,7 @@ class TeleBot(object):
 		categories_list = self.Utils_obj.getAllMerchantCategories()
 		self.categories_keyboard = self.makeAKeyboard(categories_list, 6)
 
+
 		self.base_step = 0
 
 		self.is_set_categoria = False
@@ -23,7 +24,7 @@ class TeleBot(object):
 		
 	def makeAKeyboard(self,alist, parti):
 	    length = len(alist)
-	    keyboard =  [ alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
+	    keyboard =  [alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
 	    keyboard.append(["Altra Categoria"])
 	    return keyboard
 
@@ -71,7 +72,14 @@ class TeleBot(object):
 		except telepot.exception.BotWasKickedError as e:
 			print("Sei stato buttato fuori dal gruppo")
 		except Exception as e:
-			print("Eccezione non gestita: "  + str(e))
+			if "No suggested keys" in str(e):
+				chat_id = msg['id']
+				print(msg)
+				#self.bot.sendMessage(chat_id, text="ciao" )
+			elif 'from' in str(e):	# test in canale
+				print(msg)
+			else:
+				print("Eccezione non gestita: "  + str(e))
 			
 			
 
