@@ -4,6 +4,9 @@ from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, Reply
 
 from utils import Utils
 
+# 	Dopo aver inviato la roba tramite rest devo resettare le variabili locali -----|
+#	self.resetAllVariables()	<--------------------------------------------------|
+
 class Bot(object):
 	def __init__(self):
 		self.Utils_obj = Utils()
@@ -16,11 +19,15 @@ class Bot(object):
 		self.button_categoty = "🥐 Categoria 🍷"
 		self.stop_button = "Stop"
 		self.other_categories_button = "Altra Categoria"
+		self.yes_button = "SI"
+		self.no_button = "NO"
 
 		categories_list = self.Utils_obj.getAllMerchantCategories()
 		self.categories_keyboard = self.makeAKeyboard(categories_list, 6)
 		
 		self.main_keyboard = [[self.button_categoty],[self.button_location]]
+
+		self.yes_no_keyboard = [[self.yes_button],[self.no_button]]
 
 		self.category_message = "Seleziona a quale categoria appartiene il tuo negozio.(Max 3)\n*[Premere il pulsante Stop per terminare l'aggiunta]*"
 		self.position_message = "Inviami la posizione(clicca sulla spilla e seleziona *Posizione*, quindi seleziona *Invia posizione corrente*)"
@@ -33,12 +40,9 @@ class Bot(object):
 		self.myLocation = (None, None)
 
 		self.max_categories = 3
-		self.count_categories = 0
-
-		self.is_set_categoria = False
-		self.is_set_location = False
-		self.i_can_send_location = False
-
+		
+		self.resetAllVariables()
+		
 	def makeAKeyboard(self,alist, parti):
 	    length = len(alist)
 	    keyboard =  [alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
@@ -51,6 +55,7 @@ class Bot(object):
 		self.is_set_location = False
 		self.i_can_send_location = False
 		self.myLocation = (None, None)
+		self.yes_no_step = (False, None)
 
 	def main_handler(self, msg):
 		try:
@@ -76,17 +81,26 @@ class Bot(object):
 								self.i_can_send_location = True
 						
 						elif self.base_step == 1:
-							self.bot.sendMessage(chat_id, text="Ok, registro la tua categoria di " + chat_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-							self.count_categories +=1
-							self.added_categories.append(chat_message)
+							self.bot.sendMessage(chat_id, text="Sei sicuro di voler aggiungere la categoria *" + chat_message + "*?", reply_markup={'keyboard': self.yes_no_keyboard},parse_mode= 'Markdown')
+							self.yes_no_step = (True, chat_message)
 							self.base_step = 0
-							# rimozione bottone categoria dalla tastiera principale
-							if self.count_categories == self.max_categories:
-								self.main_keyboard = [[self.button_location]]
-								self.is_set_categoria = True
 
+						elif chat_message in [j for i in self.yes_no_keyboard for j in i] and self.yes_no_step[0]:
+							category = self.yes_no_step[1]
+							if chat_message == self.yes_button:
+								self.added_categories.append(category)
+								self.count_categories += 1
+								# rimozione bottone categoria dalla tastiera principale
+								if self.count_categories == self.max_categories:
+									self.main_keyboard = [[self.button_location]]
+									self.is_set_categoria = True
+
+								self.bot.sendMessage(chat_id, text="Categoria " + category +" aggiunta con successo", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
+							elif chat_message == self.no_button:
+								self.bot.sendMessage(chat_id, text="Inserire nuovamente la categoria", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
+							self.yes_no_step = (False, None)
 						elif chat_message in [j for i in self.categories_keyboard for j in i]:
-							if chat_message == "Altra Categoria":
+							if chat_message == self.other_categories_button:
 								self.bot.sendMessage(chat_id, text=self.category_message, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 								self.base_step = 1
 							elif chat_message == self.stop_button:
@@ -99,13 +113,8 @@ class Bot(object):
 									self.base_step = 0
 									if chat_message not in self.added_categories:
 										if chat_message != self.stop_button:
-											self.bot.sendMessage(chat_id, text="Ok, registro la tua categoria di " + chat_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-											self.added_categories.append(chat_message)
-											self.count_categories += 1
-											# rimozione bottone categoria dalla tastiera principale
-											if self.count_categories == self.max_categories:
-												self.main_keyboard = [[self.button_location]]
-												self.is_set_categoria = True
+											self.bot.sendMessage(chat_id, text="Sei sicuro di voler aggiungere la categoria *" + chat_message + "*?", reply_markup={'keyboard': self.yes_no_keyboard},parse_mode= 'Markdown')
+											self.yes_no_step = (True, chat_message)
 									else:
 										self.bot.sendMessage(chat_id, text="Categoria di " + chat_message + " già aggiunta.", reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 							else:
@@ -142,13 +151,12 @@ class Bot(object):
 					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 
-					# Dopo aver inviato la roba tramite rest resetto le variabili locali ---|
-					#self.resetAllVariables()	<-------------------------------------------|
 
 		except telepot.exception.BotWasKickedError as e:
 			print("Sei stato buttato fuori dal gruppo")
 		except Exception as e:
-			print("Eccezzione: " + str(e))
+			if "No suggested keys" in str(e):	pass
+			print("Eccezione non gestita: " + str(e))
 
 	def main(self):
 		print("In Loop...")
