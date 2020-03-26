@@ -4,6 +4,7 @@
 
 - [ ] Registrazione Negozio: Posizione + Descrizione + Link per Contatto
 - [ ] Visualizzazione Negozi su Mappa
+- [ ] Aggiunta di più categorie (Massimo 3 Categorie in loop)
 
 
 ## Commerciante
@@ -22,3 +23,5 @@ Come interagisco con il commerciante?
 - Inserisco il codice univoco che il bot ha dato al commerciante
 - Gli invio una lista di quello che mi serve
 - Il messaggio verrà recapitato direttamente nella chat del commerciante in cui sono presenti commercianti e clienti
+
+
