@@ -17,10 +17,10 @@ class Bot(object):
 		# Definizione Bottoni tastiera
 		self.button_location = "📍 Posizione 📍"
 		self.button_categoty = "🥐 Categoria 🍷"
-		self.stop_button = "Stop"
+		self.stop_button = "Fine"
 		self.other_categories_button = "Altra Categoria"
-		self.yes_button = "SI"
-		self.no_button = "NO"
+		self.yes_button = "👍 SI 👍"
+		self.no_button = "👎 NO 👎"
 
 		categories_list = self.Utils_obj.getAllMerchantCategories()
 		self.categories_keyboard = self.makeAKeyboard(categories_list, 6)
@@ -29,7 +29,7 @@ class Bot(object):
 
 		self.yes_no_keyboard = [[self.yes_button],[self.no_button]]
 
-		self.category_message = "Seleziona a quale categoria appartiene il tuo negozio.(Max 3)\n*[Premere il pulsante Stop per terminare l'aggiunta]*"
+		self.category_message = "Seleziona a quale categoria appartiene il tuo negozio.(Max 3)\n*[Premere il pulsante Fine per terminare l'aggiunta]*"
 		self.position_message = "Inviami la posizione(clicca sulla spilla e seleziona *Posizione*, quindi seleziona *Invia posizione corrente*)"
 		self.main_message = "Utilizza la tastiera sottostante"
 		self.category_error_message = "Inserire almeno una tra le categorie elencate"
