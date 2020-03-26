@@ -45,6 +45,13 @@ class Bot(object):
 	    keyboard.append([self.other_categories_button, self.stop_button])
 	    return keyboard
 
+	def resetAllVariables(self):
+		self.count_categories = 0
+		self.is_set_categoria = False
+		self.is_set_location = False
+		self.i_can_send_location = False
+		self.myLocation = (None, None)
+
 	def main_handler(self, msg):
 		try:
 			content_type, chat_type, chat_id = telepot.glance(msg)
@@ -123,15 +130,20 @@ class Bot(object):
 						self.bot.sendMessage(chat_id, text=toSend,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
 						self.is_set_location = True
 					#  Messaggio di benvenuto appena si accede al bot
-					elif content_type == 'new_chat_member':
+					elif content_type == 'group_chat_created':
 						toSend = "Ciao " + first_name + " " + last_name + ", del negozio " + group_title + "!\nUtilizza la tastiera sottostante per iniziare la registrazione della tua attività."
 						self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+					elif content_type == 'new_chat_member':	pass
 					#  Per qualsiasi altro caso inviami la tastiera
 					else:
 						self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+						#self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 				elif self.is_set_categoria and self.is_set_location:
 					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
+
+					# Dopo aver inviato la roba tramite rest resetto le variabili locali ---|
+					#self.resetAllVariables()	<-------------------------------------------|
 
 		except telepot.exception.BotWasKickedError as e:
 			print("Sei stato buttato fuori dal gruppo")
