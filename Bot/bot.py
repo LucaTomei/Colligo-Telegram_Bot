@@ -15,6 +15,7 @@ class Bot(object):
 		self.button_location = "📍 Posizione 📍"
 		self.button_categoty = "🥐 Categoria 🍷"
 		self.stop_button = "Stop"
+		self.other_categories_button = "Altra Categoria"
 
 		categories_list = self.Utils_obj.getAllMerchantCategories()
 		self.categories_keyboard = self.makeAKeyboard(categories_list, 6)
@@ -42,7 +43,7 @@ class Bot(object):
 	def makeAKeyboard(self,alist, parti):
 	    length = len(alist)
 	    keyboard =  [alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
-	    keyboard.append(["Altra Categoria", self.stop_button])
+	    keyboard.append([self.other_categories_button, self.stop_button])
 	    return keyboard
 
 	def main_handler(self, msg):
@@ -113,7 +114,7 @@ class Bot(object):
 							self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 
 					# mi hai inviato la posizione
-					elif content_type == 'location' and self.i_can_send_location:
+					elif content_type == 'location' and self.i_can_send_location and not self.is_set_location:
 						self.myLocation = (latitude, longitude) = (msg['location']['latitude'], msg['location']['longitude'])
 						toSend = "Posizione Inviata: [" + str(latitude) + ", " + str(longitude) + "]"
 						
@@ -131,7 +132,7 @@ class Bot(object):
 						self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 				elif self.is_set_categoria and self.is_set_location:
 					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del nezio: *" + str(self.myLocation) + "*."
-					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove())
+					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 
 		except telepot.exception.BotWasKickedError as e:
 			print("Sei stato buttato fuori dal gruppo")
