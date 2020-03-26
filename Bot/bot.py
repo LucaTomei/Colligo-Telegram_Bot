@@ -104,7 +104,7 @@ class Bot(object):
 									else:
 										self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 								else:
-									self.bot.sendMessage(chat_id, text="Categoria *" + category +"* aggiunta con successo [Premere il pulsante *Fine* per terminare la selezione]", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
+									self.bot.sendMessage(chat_id, text="Categoria *" + category +"* aggiunta con successo.\n*[Premere il pulsante Fine per terminare la selezione]*", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
 							elif chat_message == self.no_button:
 								self.bot.sendMessage(chat_id, text="Inserire nuovamente la categoria", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
 							self.yes_no_step = (False, None)
