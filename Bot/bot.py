@@ -22,12 +22,11 @@ class Bot(object):
 		
 		self.main_keyboard = [[self.button_categoty],[self.button_location]]
 
-
-		self.category_message = "Inserisci la categoria di negozio che più ti si addice.\nPuoi inserire fino ad un massimo di tre categorie.\n[Premere il pulsante Stop per terminare l'aggiunta]"
-		self.position_message = "Inviami la posizione"
+		self.category_message = "Seleziona a quale categoria appartiene il tuo negozio.(Max 3)\n*[Premere il pulsante Stop per terminare l'aggiunta]*"
+		self.position_message = "Inviami la posizione(clicca sulla spilla e seleziona *Posizione*, quindi seleziona *Invia posizione corrente*)"
 		self.main_message = "Utilizza la tastiera sottostante"
 		self.category_error_message = "Inserire almeno una tra le categorie elencate"
-		self.category_ok_message = "Categorie aggiunte con successo. Il tuo negozio rispecchia le seguenti categorie: "
+		self.category_ok_message = "Categorie aggiunte con successo. Il tuo negozio appartiene alle seguenti categorie: "
 		self.base_step = 0
 
 		self.added_categories = []
@@ -103,12 +102,12 @@ class Bot(object):
 									else:
 										self.bot.sendMessage(chat_id, text="Categoria di " + chat_message + " già aggiunta.", reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 							else:
-								toSend = "Le Categorie sono già settate *" + str(self.added_categories) + "*"
+								toSend = "Le Categorie sono già impostate *" + str(self.added_categories) + "*"
 								if not self.is_set_location:
-									toSend = toSend + ", ti manca solo l'invio della posizione"
+									toSend = toSend + ", Ti manca solo l'invio della posizione"
 									self.main_keyboard = [[self.button_location]]
 								else:
-									toSend = toSend + ", la tua posizione è " + str(self.myLocation) 
+									toSend = toSend + ", La tua posizione è " + str(self.myLocation) 
 								self.bot.sendMessage(chat_id, text= toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 						else:
 							self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
@@ -125,13 +124,13 @@ class Bot(object):
 						self.is_set_location = True
 					#  Messaggio di benvenuto appena si accede al bot
 					elif content_type == 'new_chat_member':
-						toSend = "Ciao " + first_name + " " + last_name + " del gruppo " + group_title + " utilizza la tastiera sottostante per eseguire le azioni sul bot"
+						toSend = "Ciao " + first_name + " " + last_name + ", del negozio " + group_title + "!\nUtilizza la tastiera sottostante per iniziare la registrazione della tua attività."
 						self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 					#  Per qualsiasi altro caso inviami la tastiera
 					else:
 						self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 				elif self.is_set_categoria and self.is_set_location:
-					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del nezio: *" + str(self.myLocation) + "*."
+					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 
 		except telepot.exception.BotWasKickedError as e:
