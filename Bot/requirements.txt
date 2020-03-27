@@ -1,0 +1,3 @@
+python-telegram-bot==12.4.2
+geopy==1.21.0
+telepot==12.7

@@ -1,6 +1,12 @@
 # EasyCollectTelegramBot
 
-## TODO 
+## INSTALLAZIONE
+
+```shell
+	cd Bot
+	pip install -r requirements.txt
+	python bot.py
+```
 
 
 ## Commerciante
@@ -10,8 +16,3 @@
 - Il commerciante riferisce al bot dove si trova il negozio
 - Salvataggio credenziali utente su file
 
-## Cliente
-
-Come interagisco con il commerciante?
-- Apro il bot
-- Contattare il comerciante privatamente su Telegram
