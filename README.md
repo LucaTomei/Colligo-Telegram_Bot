@@ -3,7 +3,7 @@
 ## Screenshots
 
 ![Immagine Avvio Bot]
-(Screenshots/IMG_1888-min 2.PNG)
+(Screenshots/1.PNG)
 
 ## Installazione
 
