@@ -146,7 +146,7 @@ class Bot(object):
 	def main_handler(self, msg):
 		try:
 			#print(msg)
-			print(self.is_set_categoria, self.is_set_location)
+			#print(self.is_set_categoria, self.is_set_location)
 			content_type, chat_type, chat_id = telepot.glance(msg)
 			
 			if not self.Utils_obj.is_user_just_in_db(chat_id):	self.Utils_obj.registerAnUser(chat_id)

@@ -7,7 +7,7 @@ class Utils(object):
 
 		self.db_file = self.root_file_folder + "db.json"
 
-		self.base_request_url = "https://evening-plateau-32926.herokuapp.com"
+		self.base_request_url = "https://boiling-beyond-07880.herokuapp.com/"
 
 	def is_user_just_in_db(self, chat_id):
 		contentOfFile = self.getContentOfFile(self.db_file)['users']
@@ -84,30 +84,6 @@ class Utils(object):
 		if username == '':	username = group_title
 		url = self.base_request_url + '/shops'
 		to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng), "address":self.from_lat_lng_to_address(lat, lng), "description":group_title, "telegram":"@"+username, 'categories_ids': self.from_category_name_to_ids(categories)}
-		response = requests.post(url = url, data = to_post)
-		print(response.json())
+		response = requests.post(url = url, json = to_post)
+		#print(response.json(), response.status_code)
 		return response.status_code
-
-
-if __name__ == '__main__':
-	Utils = Utils()
-	
-	lat = 41.8814
-	lng = 12.5669
-	address = Utils.from_lat_lng_to_address(lat, lng)
-
-
-	categories = ['Alimentari']
-	print(Utils.from_category_name_to_ids(categories))
-	# group_title = "test124_"+str(lat) +"_" + str(lng)
-	# categories = [{
- #            "id":81,
- #            "natural_key":"formaggeria",
- #            "name":"Formaggeria"
- #         },
- #         {
- #            "id":151,
- #            "natural_key":"alimentari",
- #            "name":"Alimentari"
- #         }]
-	# Utils.post_shop_details(group_title, lat, lng, address,categories)
