@@ -2,6 +2,7 @@
 
 ## Screenshots
 
+Main Image | Main Image
 :-------------------------:|:-------------------------:
 ![Screenshot](Screenshots/1.PNG) | ![Screenshot](Screenshots/2.JPG)
 
