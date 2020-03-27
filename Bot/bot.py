@@ -151,8 +151,7 @@ class Bot(object):
 			print(self.is_set_categoria, self.is_set_location)
 			content_type, chat_type, chat_id = telepot.glance(msg)
 			
-			if not self.Utils_obj.is_user_just_in_db(chat_id):
-				self.Utils_obj.registerAnUser(chat_id)
+			if not self.Utils_obj.is_user_just_in_db(chat_id):	self.Utils_obj.registerAnUser(chat_id)
 		
 			# Per ora si gestisce solo l'accesso al bot in un gruppo o supergruppo
 			if 'chat' in msg and 'group' in chat_type and not self.Utils_obj.user_has_done(chat_id):

@@ -77,6 +77,7 @@ class Utils(object):
 		toRet = []
 		for item in self.retrieveMerchantCategories():
 			if item['name'] in categoriesNamesList:	toRet.append(item['id'])
+		print("Lista:", toRet)
 		return list(set(toRet))
 
 	def post_shop_details(self, group_title,lat, lng, categories, username = ''):
@@ -84,6 +85,7 @@ class Utils(object):
 		url = self.base_request_url + '/shops'
 		to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng), "address":self.from_lat_lng_to_address(lat, lng), "description":group_title, "telegram":"@"+username, 'categories_ids': self.from_category_name_to_ids(categories)}
 		response = requests.post(url = url, data = to_post)
+		print(response.json())
 		return response.status_code
 
 

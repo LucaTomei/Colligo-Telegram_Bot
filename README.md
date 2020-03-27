@@ -1,6 +1,11 @@
 # EasyCollectTelegramBot
 
-## INSTALLAZIONE
+## Screenshots
+
+![Immagine Avvio Bot]
+(Screenshots/IMG_1888-min 2.PNG)
+
+## Installazione
 
 ```shell
 	cd Bot
