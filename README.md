@@ -4,7 +4,7 @@
 
 Main Window | Keyboards
 :-------------------------:|:-------------------------:
-![Screenshot](Screenshots/1.PNG) | ![Screenshot](Screenshots/3.JPG)
+![Screenshot](Screenshots/1.PNG) | ![Screenshot](Screenshots/3.JPG) ![Screenshot](Screenshots/8.PNG)
 
 <img src="Screenshots/1.PNG" width="260" height= "600"/> <img src="Screenshots/3.JPG" width="260" height= "600"/> <img src="Screenshots/8.PNG" width="260" height= "600"/> 
 
