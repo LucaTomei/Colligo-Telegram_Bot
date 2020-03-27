@@ -2,8 +2,7 @@
 
 ## Screenshots
 
-![Image of Main]
-(Screenshots/1.PNG)
+![Screenshot](Screenshots/1.PNG)
 
 ## Installazione
 
