@@ -22,7 +22,8 @@
 ## Commerciante
 
 - Crea un gruppo e aggiunge il bot come amministratore
-- Il commerciante riferisce al bot che categorie di negozio ha, massimo tre scelte
-- Il commerciante riferisce al bot dove si trova il negozio
+- Riferisce al bot che categorie di negozio ha, massimo tre scelte
+- Riferisce al bot dove si trova il negozio
+- A questo punto la registrazione del suo negozio è completata con successo
 - Salvataggio credenziali utente su file
 
