@@ -8,7 +8,7 @@
 	<img src="Screenshots/8.PNG" width="400px"</img> 
 </div>
 
-### Checkout the [Youtube Video](https://www.youtube.com/watch?v=86aQWj2rBxY)
+### Checkout the [Youtube Video](https://youtu.be/86aQWj2rBxY)
 
 ## Installazione
 
