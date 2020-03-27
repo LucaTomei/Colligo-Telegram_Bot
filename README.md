@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-![Immagine Avvio Bot]
+![Image of Main]
 (Screenshots/1.PNG)
 
 ## Installazione
