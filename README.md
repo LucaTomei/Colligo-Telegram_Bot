@@ -6,7 +6,7 @@ Main Window | Keyboards
 :-------------------------:|:-------------------------:
 ![Screenshot](Screenshots/1.PNG) | ![Screenshot](Screenshots/3.JPG)
 
-<img src="Screenshots/1.PNG" width="260", height= "400"/> <img src="Screenshots/3.JPG" width="260", height= "400"/> <img src="Screenshots/8.PNG" width="260", height= "400"/> 
+<img src="Screenshots/1.PNG" width="260" height= "400"/> <img src="Screenshots/3.JPG" width="260" height= "400"/> <img src="Screenshots/8.PNG" width="260" height= "400"/> 
 
 ## Installazione
 
