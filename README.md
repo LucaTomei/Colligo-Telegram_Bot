@@ -4,7 +4,7 @@
 
 <div align="center">
 	<img src="Screenshots/1.PNG" width="400px"</img> 
-	<img src="Screenshots/3.JPG" width="400px"</img> 
+	<img src="Screenshots/3.PNG" width="400px"</img> 
 	<img src="Screenshots/8.PNG" width="400px"</img> 
 </div>
 
