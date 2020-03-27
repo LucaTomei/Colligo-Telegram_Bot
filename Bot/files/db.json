@@ -1,4 +1,8 @@
 {
     "users": [
+        {
+            "chat_id": -490260756,
+            "has_done": true
+        }
     ]
 }

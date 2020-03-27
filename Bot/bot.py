@@ -66,7 +66,7 @@ class Bot(object):
 	def send_welcome_message(self, chat_id, first_name, group_title):
 		self.group_title = group_title
 		toSend = "Benvenuto *" + first_name + "*  del negozio *" + group_title + "* sono EasyCollect, il bot che ti accompagnerà nella vendita online della tua attività.\n"
-		toSend = toSend + "Attraverso i pannelli sottostanti potrai selezionare le categorie che descrivono il tuo negozio e condividerne la tua posizione con i clienti."
+		toSend = toSend + "Attraverso i pannelli sottostanti potrai selezionare le categorie che descrivono il tuo negozio e condividere la tua posizione con i clienti."
 		self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 
 	def main_keyboard_handler(self, chat_id ,chat_message):
@@ -85,7 +85,7 @@ class Bot(object):
 			if self.count_categories == self.max_categories:
 				self.main_keyboard = [[self.button_location]]
 				self.is_set_categoria = True
-				toSend = "Ecco le categorie che hai impostato *" + str(self.added_categories) + "*"
+				toSend = "Ecco le categorie che hai impostato\n*" + str(self.added_categories) + "*"
 				if self.is_set_location:
 					toSend = toSend + ", questa è la posizione del tuo negozio " + str(self.myLocation[1])
 					self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
@@ -103,14 +103,13 @@ class Bot(object):
 				self.is_set_categoria = True
 				if not self.is_set_location:
 					self.main_keyboard = [[self.button_location]]
-					toSend = "Ecco le categorie che hai impostato *" + str(self.added_categories) + "*"
+					toSend = "Ecco le categorie che hai impostato\n*" + str(self.added_categories) + "*"
 					self.bot.sendMessage(chat_id, text= toSend, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 				else:
 					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 					self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 					lat, lng = self.myLocation
 					self.Utils_obj.stop_user(chat_id)
-					self.resetAllVariables()
 					status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.username)
 					if status_code == 200: self.resetAllVariables()
 			else:
@@ -138,11 +137,10 @@ class Bot(object):
 			self.is_set_location = True
 		else:
 			status_code = self.Utils_obj.post_shop_details(self.group_title,latitude, longitude, self.added_categories, self.username)
-			if status_code == 200: self.resetAllVariables()
 			toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 			self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 			self.Utils_obj.stop_user(chat_id)
-			self.resetAllVariables()
+			if status_code == 200: self.resetAllVariables()
 
 
 	def main_handler(self, msg):
@@ -195,7 +193,6 @@ class Bot(object):
 					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 					lat, lng = self.myLocation
 					self.Utils_obj.stop_user(chat_id)
-					self.resetAllVariables()
 					status_code = self.Utils_obj.post_shop_details(group_title,lat, lng, self.added_categories, self.username)
 					if status_code == 200: self.resetAllVariables()
 				
