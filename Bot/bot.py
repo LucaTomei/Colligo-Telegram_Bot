@@ -111,8 +111,8 @@ class Bot(object):
 					lat, lng = self.myLocation
 					self.Utils_obj.stop_user(chat_id)
 					self.resetAllVariables()
-					#status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.username)
-					#if status_code == 200: self.resetAllVariables()
+					status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.username)
+					if status_code == 200: self.resetAllVariables()
 			else:
 				self.bot.sendMessage(chat_id, text=self.category_error_message, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 		elif chat_message == self.other_categories_button:
@@ -137,8 +137,8 @@ class Bot(object):
 			self.bot.sendMessage(chat_id, text=toSend,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
 			self.is_set_location = True
 		else:
-			# status_code = self.Utils_obj.post_shop_details(self.group_title,latitude, longitude, self.added_categories, self.username)
-			# if status_code == 200: self.resetAllVariables()
+			status_code = self.Utils_obj.post_shop_details(self.group_title,latitude, longitude, self.added_categories, self.username)
+			if status_code == 200: self.resetAllVariables()
 			toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 			self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 			self.Utils_obj.stop_user(chat_id)
@@ -197,8 +197,8 @@ class Bot(object):
 					lat, lng = self.myLocation
 					self.Utils_obj.stop_user(chat_id)
 					self.resetAllVariables()
-					# status_code = self.Utils_obj.post_shop_details(group_title,lat, lng, self.added_categories, self.username)
-					# if status_code == 200: self.resetAllVariables()
+					status_code = self.Utils_obj.post_shop_details(group_title,lat, lng, self.added_categories, self.username)
+					if status_code == 200: self.resetAllVariables()
 				
 		except telepot.exception.BotWasKickedError as e:
 			print("Sei stato buttato fuori dal gruppo")
