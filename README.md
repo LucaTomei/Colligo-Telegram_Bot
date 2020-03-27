@@ -2,9 +2,9 @@
 
 ## Screenshots
 
-Main Image | Main Image
+Main Window | Keyboards
 :-------------------------:|:-------------------------:
-![Screenshot](Screenshots/1.PNG) | ![Screenshot](Screenshots/2.JPG)
+![Screenshot](Screenshots/1.PNG) | ![Screenshot](Screenshots/3.JPG)
 
 ## Installazione
 
