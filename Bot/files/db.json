@@ -11,6 +11,10 @@
         {
             "chat_id": -157454573,
             "has_done": true
+        },
+        {
+            "chat_id": -481261583,
+            "has_done": false
         }
     ]
 }

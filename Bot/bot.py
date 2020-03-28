@@ -117,10 +117,7 @@ class Bot(object):
 					if status_code == 200: 
 						self.resetAllVariables()
 						self.Utils_obj.stop_user(chat_id)
-					else:
-						self.bot.sendMessage(chat_id, text=self.error_message,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
-						self.resetAllVariables()
-						self.send_welcome_message()
+					
 			else:
 				self.bot.sendMessage(chat_id, text=self.category_error_message, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 		elif chat_message == self.other_categories_button:
@@ -151,90 +148,84 @@ class Bot(object):
 			if status_code == 200: 
 				self.resetAllVariables()
 				self.Utils_obj.stop_user(chat_id)
-			else:
-				self.bot.sendMessage(chat_id, text=self.error_message,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
-				self.resetAllVariables()
-				self.send_welcome_message()
+			
 			
 
 	def main_handler(self, msg):
-		try:
+		#try:
 			#print(msg)
 			#print(self.is_set_categoria, self.is_set_location)
-			content_type, chat_type, chat_id = telepot.glance(msg)
-			
-			if not self.Utils_obj.is_user_just_in_db(chat_id):	self.Utils_obj.registerAnUser(chat_id)
+		content_type, chat_type, chat_id = telepot.glance(msg)
 		
-			# Per ora si gestisce solo l'accesso al bot in un gruppo o supergruppo
-			if 'chat' in msg and 'group' in chat_type and not self.Utils_obj.user_has_done(chat_id):
-				# se supergruppo passo come descrizione l'username del gruppo
-				if chat_type == 'supergroup':
-					self.is_super_group_flag = True
-					self.username = msg['chat']['username']
+		if not self.Utils_obj.is_user_just_in_db(chat_id):	self.Utils_obj.registerAnUser(chat_id)
+	
+		# Per ora si gestisce solo l'accesso al bot in un gruppo o supergruppo
+		if 'chat' in msg and 'group' in chat_type and not self.Utils_obj.user_has_done(chat_id):
+			# se supergruppo passo come descrizione l'username del gruppo
+			if chat_type == 'supergroup':
+				self.is_super_group_flag = True
+				self.username = msg['chat']['username']
 
-				(first_name, group_title) = (msg['from']['first_name'], msg['chat']['title'])
-				self.group_title = group_title
-				if not self.is_set_location or not self.is_set_categoria:
-					
-					# Si tratta di messaggio testuale
-					if content_type == 'text':
-						chat_message = msg['text']
-						# hai premuto uno dei bottoni della tastiera principale
-						if chat_message in [j for i in self.main_keyboard for j in i]:
-							self.main_keyboard_handler(chat_id, chat_message)
+			(first_name, group_title) = (msg['from']['first_name'], msg['chat']['title'])
+			self.group_title = group_title
+			if not self.is_set_location or not self.is_set_categoria:
+				
+				# Si tratta di messaggio testuale
+				if content_type == 'text':
+					chat_message = msg['text']
+					# hai premuto uno dei bottoni della tastiera principale
+					if chat_message in [j for i in self.main_keyboard for j in i]:
+						self.main_keyboard_handler(chat_id, chat_message)
 
-						elif chat_message in [j for i in self.yes_no_keyboard for j in i] and self.webSiteStep == 1:
-							if chat_message == self.yes_button:
-								self.webSiteStep = 2
-								self.bot.sendMessage(chat_id, text="Inserisci il link al tuo sito web", reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-							else:
-								self.bot.sendMessage(chat_id, text = self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
-								self.webSiteStep = 0
-						elif self.webSiteStep == 2:
-							self.webSiteName = chat_message
-							self.bot.sendMessage(chat_id, text = "*Sito Web impostato con successo*\n"+self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
-							self.webSiteStep = 0
-						elif chat_message in [j for i in self.yes_no_keyboard for j in i]:
-							self.yes_no_handler(chat_id, chat_message)
-						elif chat_message in [j for i in self.categories_keyboard for j in i]:
-							self.category_handler(chat_id, chat_message)
+					elif chat_message in [j for i in self.yes_no_keyboard for j in i] and self.webSiteStep == 1:
+						if chat_message == self.yes_button:
+							self.webSiteStep = 2
+							self.bot.sendMessage(chat_id, text="Inserisci il link al tuo sito web", reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 						else:
-							self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-
-					# mi hai inviato la posizione
-					elif content_type == 'location' and self.i_can_send_location and not self.is_set_location:
-						self.location_handler(chat_id, msg)
-						self.i_can_send_location = False
-					#  Messaggio di benvenuto appena si accede al bot
-					elif content_type == 'group_chat_created':
-						self.send_welcome_message(chat_id, first_name, group_title)
-					elif content_type == 'new_chat_member':	pass
-					elif content_type == 'new_chat_photo':	pass
-
-					#  Per qualsiasi altro caso inviami la tastiera principale
+							self.bot.sendMessage(chat_id, text = self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
+							self.webSiteStep = 0
+					elif self.webSiteStep == 2:
+						self.webSiteName = chat_message
+						self.bot.sendMessage(chat_id, text = "*Sito Web impostato con successo*\n"+self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
+						self.webSiteStep = 0
+					elif chat_message in [j for i in self.yes_no_keyboard for j in i]:
+						self.yes_no_handler(chat_id, chat_message)
+					elif chat_message in [j for i in self.categories_keyboard for j in i]:
+						self.category_handler(chat_id, chat_message)
 					else:
 						self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 
-				elif self.is_set_categoria and self.is_set_location:
-					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
-					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-					lat, lng = self.myLocation
-					status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.webSiteName,self.username)
-					if status_code == 200:
-						self.resetAllVariables()
-						self.Utils_obj.stop_user(chat_id)
-					else:
-						self.bot.sendMessage(chat_id, text=self.error_message,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
-						self.resetAllVariables()
-						self.send_welcome_message()
+				# mi hai inviato la posizione
+				elif content_type == 'location' and self.i_can_send_location and not self.is_set_location:
+					self.location_handler(chat_id, msg)
+					self.i_can_send_location = False
+				#  Messaggio di benvenuto appena si accede al bot
+				elif content_type == 'group_chat_created':
+					self.send_welcome_message(chat_id, first_name, group_title)
+				elif content_type == 'new_chat_member':	pass
+				elif content_type == 'new_chat_photo':	pass
+
+				#  Per qualsiasi altro caso inviami la tastiera principale
+				else:
+					self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+
+			elif self.is_set_categoria and self.is_set_location:
+				toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
+				self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
+				lat, lng = self.myLocation
+				status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.webSiteName,self.username)
+				if status_code == 200:
+					self.resetAllVariables()
+					self.Utils_obj.stop_user(chat_id)
 				
-		except telepot.exception.BotWasKickedError as e:
-			print("Sei stato buttato fuori dal gruppo")
-		except Exception as e:
-			if "No suggested keys" in str(e):	pass
-			elif "title" in str(e):	pass
-			elif 'supergroup' in str(e):	pass
-			print("Eccezione non gestita: " + str(e))
+				
+		# except telepot.exception.BotWasKickedError as e:
+		# 	print("Sei stato buttato fuori dal gruppo")
+		# except Exception as e:
+		# 	if "No suggested keys" in str(e):	pass
+		# 	elif "title" in str(e):	pass
+		# 	elif 'supergroup' in str(e):	pass
+		# 	print("Eccezione non gestita: " + str(e))
 
 	def main(self):
 		print("In Loop...")

@@ -100,8 +100,9 @@ class Utils(object):
 			to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng),"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username,'categories_ids': self.from_category_name_to_ids(categories)}
 		else:
 			to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng),"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
+		print(to_post)
 		response = requests.post(url = url, json = to_post)
-		print(response.json(), response.status_code)
+		#print(response.json(), response.status_code)
 		return response.status_code
 
 
