@@ -1,0 +1,10 @@
+[Unit]
+Description=The bulb server
+After=network-online.target
+
+[Service]
+ExecStart=/bin/bash /home/pi/easy-collect-telegram/Bot/launcher.sh
+User=pi
+
+[Install]
+WantedBy=multi-user.target
