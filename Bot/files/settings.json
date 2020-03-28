@@ -1,19 +1,4 @@
 {
     "botToken": "1029686497:AAGyXHi9s6u-JXtvLJPSO29NUQIgo6nA_tI",
-    "categories": [
-        "Enoteche",
-        "Birroteche",
-        "Oleoteche",
-        "Gastronomie",
-        "Panifici",
-        "Pastifici",
-        "Macellerie",
-        "Pescherie",
-        "Formaggerie",
-        "Pasticcerie",
-        "Cioccolaterie",
-        "Teerie",
-        "Torrefazioni",
-        "Bio & Equo"
-    ]
+    "daemon_mame":"easycollect.service"
 }
