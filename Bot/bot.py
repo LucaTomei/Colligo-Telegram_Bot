@@ -7,9 +7,8 @@ from utils import Utils
 # 	Dopo aver inviato la roba tramite rest devo resettare le variabili locali -----|
 #	self.resetAllVariables()	<--------------------------------------------------|
 
-# rimozione altra categoria 
 # Check se negozio è già presente
-
+ 
 class Bot(object):
 	def __init__(self):
 		self.Utils_obj = Utils()
@@ -38,7 +37,10 @@ class Bot(object):
 		self.main_message = "Utilizza la tastiera sottostante"
 		self.category_error_message = "Inserire almeno una tra le categorie elencate"
 
+		self.description_message =  "Attraverso i pannelli sottostanti potrai selezionare le categorie che descrivono il tuo negozio e condividere la tua posizione con i clienti."
 		
+		self.error_message = "Qualcosa è andato storto con la registrazione del tuo negozio\nRicominciamo la registrazione dall'inizio."
+
 		self.resetAllVariables()
 		
 	def makeAKeyboard(self,alist, parti):
@@ -62,12 +64,14 @@ class Bot(object):
 		self.i_can_send_location = False
 		self.myLocation = (None, None)
 		self.yes_no_step = (False, None)
+		self.webSiteName = ""
+		self.webSiteStep = 0
 
 	def send_welcome_message(self, chat_id, first_name, group_title):
 		self.group_title = group_title
-		toSend = "Benvenuto *" + first_name + "*  del negozio *" + group_title + "* sono EasyCollect, il bot che ti accompagnerà nella vendita online della tua attività.\n"
-		toSend = toSend + "Attraverso i pannelli sottostanti potrai selezionare le categorie che descrivono il tuo negozio e condividere la tua posizione con i clienti."
-		self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+		toSend = "Benvenuto *" + first_name + "*  del negozio *" + group_title + "* sono ColliGo, il bot che ti accompagnerà nella vendita online della tua attività.\nHai un sito web del negozio?"
+		self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.yes_no_keyboard},parse_mode= 'Markdown')
+		self.webSiteStep = 1
 
 	def main_keyboard_handler(self, chat_id ,chat_message):
 		if chat_message == self.button_categoty:
@@ -109,9 +113,14 @@ class Bot(object):
 					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 					self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 					lat, lng = self.myLocation
-					self.Utils_obj.stop_user(chat_id)
-					status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.username)
-					if status_code == 200: self.resetAllVariables()
+					status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.webSiteName,self.username)
+					if status_code == 200: 
+						self.resetAllVariables()
+						self.Utils_obj.stop_user(chat_id)
+					else:
+						self.bot.sendMessage(chat_id, text=self.error_message,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
+						self.resetAllVariables()
+						self.send_welcome_message()
 			else:
 				self.bot.sendMessage(chat_id, text=self.category_error_message, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 		elif chat_message == self.other_categories_button:
@@ -136,12 +145,17 @@ class Bot(object):
 			self.bot.sendMessage(chat_id, text=toSend,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
 			self.is_set_location = True
 		else:
-			status_code = self.Utils_obj.post_shop_details(self.group_title,latitude, longitude, self.added_categories, self.username)
+			status_code = self.Utils_obj.post_shop_details(self.group_title,latitude, longitude, self.added_categories, self.webSiteName,self.username)
 			toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 			self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-			self.Utils_obj.stop_user(chat_id)
-			if status_code == 200: self.resetAllVariables()
-
+			if status_code == 200: 
+				self.resetAllVariables()
+				self.Utils_obj.stop_user(chat_id)
+			else:
+				self.bot.sendMessage(chat_id, text=self.error_message,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
+				self.resetAllVariables()
+				self.send_welcome_message()
+			
 
 	def main_handler(self, msg):
 		try:
@@ -169,7 +183,18 @@ class Bot(object):
 						if chat_message in [j for i in self.main_keyboard for j in i]:
 							self.main_keyboard_handler(chat_id, chat_message)
 
-						elif chat_message in [j for i in self.yes_no_keyboard for j in i] and self.yes_no_step[0]:
+						elif chat_message in [j for i in self.yes_no_keyboard for j in i] and self.webSiteStep == 1:
+							if chat_message == self.yes_button:
+								self.webSiteStep = 2
+								self.bot.sendMessage(chat_id, text="Inserisci il link al tuo sito web", reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
+							else:
+								self.bot.sendMessage(chat_id, text = self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
+								self.webSiteStep = 0
+						elif self.webSiteStep == 2:
+							self.webSiteName = chat_message
+							self.bot.sendMessage(chat_id, text = "*Sito Web impostato con successo*\n"+self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
+							self.webSiteStep = 0
+						elif chat_message in [j for i in self.yes_no_keyboard for j in i]:
 							self.yes_no_handler(chat_id, chat_message)
 						elif chat_message in [j for i in self.categories_keyboard for j in i]:
 							self.category_handler(chat_id, chat_message)
@@ -185,16 +210,23 @@ class Bot(object):
 						self.send_welcome_message(chat_id, first_name, group_title)
 					elif content_type == 'new_chat_member':	pass
 					elif content_type == 'new_chat_photo':	pass
+
 					#  Per qualsiasi altro caso inviami la tastiera principale
 					else:
 						self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+
 				elif self.is_set_categoria and self.is_set_location:
 					toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 					self.bot.sendMessage(chat_id, text=toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 					lat, lng = self.myLocation
-					self.Utils_obj.stop_user(chat_id)
-					status_code = self.Utils_obj.post_shop_details(group_title,lat, lng, self.added_categories, self.username)
-					if status_code == 200: self.resetAllVariables()
+					status_code = self.Utils_obj.post_shop_details(self.group_title,lat, lng, self.added_categories, self.webSiteName,self.username)
+					if status_code == 200:
+						self.resetAllVariables()
+						self.Utils_obj.stop_user(chat_id)
+					else:
+						self.bot.sendMessage(chat_id, text=self.error_message,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
+						self.resetAllVariables()
+						self.send_welcome_message()
 				
 		except telepot.exception.BotWasKickedError as e:
 			print("Sei stato buttato fuori dal gruppo")

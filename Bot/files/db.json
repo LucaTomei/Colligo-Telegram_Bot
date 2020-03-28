@@ -1,3 +1,16 @@
 {
-    "users": []
+    "users": [
+        {
+            "chat_id": -406544036,
+            "has_done": false
+        },
+        {
+            "chat_id": -423641072,
+            "has_done": true
+        },
+        {
+            "chat_id": -157454573,
+            "has_done": true
+        }
+    ]
 }

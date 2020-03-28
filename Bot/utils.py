@@ -68,10 +68,22 @@ class Utils(object):
 		return response.json()
 
 	def from_lat_lng_to_address(self, lat, lng):
-		geolocator = Nominatim(user_agent="EasyCollectBot")
-		lat_lng_str = str(lat) + "," + str(lng)
-		location = geolocator.reverse(lat_lng_str)
-		return location.address
+		url = 'https://geocode.xyz/'+str(lat) + ','+ str(lng) + '?geoit=json'
+		raw_location = requests.get(url).json()
+		if 'alt' in raw_location:
+			city = raw_location['city'].capitalize()
+			address = raw_location['alt']['loc'][0]['staddress'] + " " + raw_location['alt']['loc'][0]['stnumber']
+			postcode =  raw_location['alt']['loc'][0]['postal']
+		else:
+			geolocator = Nominatim(user_agent='ColliGoBot')
+			location = geolocator.reverse(str(lat) + ',' + str(lng))
+			raw_location = location.raw['address']
+			print(raw_location)
+			if 'town' in raw_location:
+				city = raw_location['town'].capitalize()
+				address = raw_location['road']
+				postcode =  raw_location['postcode']
+		return (city, address, str(postcode))
 
 	def from_category_name_to_ids(self, categoriesNamesList):
 		toRet = []
@@ -80,10 +92,23 @@ class Utils(object):
 		print("Lista:", toRet)
 		return list(set(toRet))
 
-	def post_shop_details(self, group_title,lat, lng, categories, username = ''):
+	def post_shop_details(self, group_title,lat, lng, categories, website,username = ''):
 		if username == '':	username = group_title
 		url = self.base_request_url + '/shops'
-		to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng), "address":self.from_lat_lng_to_address(lat, lng), "description":group_title, "telegram":"@"+username, 'categories_ids': self.from_category_name_to_ids(categories)}
+		(city, address, postcode) = self.from_lat_lng_to_address(lat, lng)
+		if website == '':
+			to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng),"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username,'categories_ids': self.from_category_name_to_ids(categories)}
+		else:
+			to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng),"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
 		response = requests.post(url = url, json = to_post)
-		#print(response.json(), response.status_code)
+		print(response.json(), response.status_code)
 		return response.status_code
+
+
+if __name__ == '__main__':
+	Utils = Utils()
+	lat, lng = (40.504873, 15.415253)
+	lat, lng = (41.956221, 12.721205)	#casa
+	lat, lng = (42.106315, 12.175018)
+	x = Utils.from_lat_lng_to_address(lat, lng)
+	print(x)
