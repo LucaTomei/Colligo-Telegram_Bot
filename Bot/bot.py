@@ -69,6 +69,7 @@ class Bot(object):
 		self.webSiteName = ""
 		self.webSiteStep = 0
 		self.location_error_step = 0
+		self.telegram_link = ''
 
 	def send_welcome_message(self, chat_id, first_name, group_title):
 		self.group_title = group_title
@@ -114,7 +115,7 @@ class Bot(object):
 					self.bot.sendMessage(chat_id, text= toSend, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
 				else:
 					lat, lng = self.myLocation
-					status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username,lat, lng)
+					status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username,lat, lng, telegram = self.telegram_link)
 					if status_code == 200: 
 						toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 						self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
@@ -142,7 +143,7 @@ class Bot(object):
 			self.bot.sendMessage(chat_id, text=toSend,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
 			self.is_set_location = True
 		else:
-			status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username, latitude, longitude)
+			status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username, latitude, longitude, telegram = self.telegram_link)
 			if status_code == 200: 
 				toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 				self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
@@ -171,6 +172,8 @@ class Bot(object):
 
 				(first_name, group_title) = (msg['from']['first_name'], msg['chat']['title'])
 				self.group_title = group_title
+				try:	self.telegram_link = self.bot.exportChatInviteLink(chat_id)
+				except:	pass
 				if not self.is_set_location or not self.is_set_categoria:
 					
 					# Si tratta di messaggio testuale
@@ -182,7 +185,7 @@ class Bot(object):
 						elif self.location_error_step == 1:
 							try:
 								address , city , postcode = chat_message.split(',')
-								self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username,address = address, city = city, postcode = postcode)
+								self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username,address = address, city = city, postcode = postcode, telegram = self.telegram_link)
 								toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(chat_message) + "*."
 								self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
 								self.resetAllVariables()
@@ -225,7 +228,7 @@ class Bot(object):
 
 				elif self.is_set_categoria and self.is_set_location:
 					lat, lng = self.myLocation
-					status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username, lat, lng)
+					status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username, lat, lng, telegram = self.telegram_link)
 					if status_code == 200: 
 						toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
 						self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')

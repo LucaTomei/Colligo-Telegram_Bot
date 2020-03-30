@@ -97,25 +97,27 @@ class Utils(object):
 		toRet = []
 		for item in self.retrieveMerchantCategories():
 			if item['name'] in categoriesNamesList:	toRet.append(item['id'])
-		print("Lista:", toRet)
+		#print("Lista:", toRet)
 		return list(set(toRet))
 
-	def post_shop_details(self, group_title, categories, website,username = '', lat = '', lng = '', address = '', city = '', postcode = ''):
+	def post_shop_details(self, group_title, categories, website,username = '', lat = '', lng = '', address = '', city = '', postcode = '', telegram = ''):
 		try:
 			if username == '':	username = group_title
 			url = self.base_request_url + '/shops'
+			if telegram == '':
+				telegram = '@'+username
 			if city == '' or address == '' or postcode == '':
 				(city, address, postcode) = self.from_lat_lng_to_address(lat, lng)
 			if website == '':
-					to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username,'categories_ids': self.from_category_name_to_ids(categories)}
+					to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":telegram,'categories_ids': self.from_category_name_to_ids(categories)}
 			else:
-				to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
-			print(to_post)
+				to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":telegram, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
+			#print(to_post)
 			response = requests.post(url = url, json = to_post)
-			print(response.json(), response.status_code)
+			#print(response.json(), response.status_code)
 			return response.status_code
 		except Exception as e:
-			print(str(e))
+			#print(str(e))
 			return 400
 
 
