@@ -102,6 +102,7 @@ class Utils(object):
 
 	def post_shop_details(self, group_title, categories, website,username = '', lat = '', lng = '', address = '', city = '', postcode = '', telegram = ''):
 		try:
+			telegram = str(telegram)
 			if username == '':	username = group_title
 			url = self.base_request_url + '/shops'
 			if telegram == '':

@@ -162,7 +162,7 @@ class Bot(object):
 			content_type, chat_type, chat_id = telepot.glance(msg)
 			
 			if not self.Utils_obj.is_user_just_in_db(chat_id):	self.Utils_obj.registerAnUser(chat_id)
-			print(self.Utils_obj.user_has_done(chat_id))
+			#print(self.Utils_obj.user_has_done(chat_id))
 			# Per ora si gestisce solo l'accesso al bot in un gruppo o supergruppo
 			if 'chat' in msg and 'group' in chat_type and not self.Utils_obj.user_has_done(chat_id):
 				# se supergruppo passo come descrizione l'username del gruppo
@@ -172,7 +172,9 @@ class Bot(object):
 
 				(first_name, group_title) = (msg['from']['first_name'], msg['chat']['title'])
 				self.group_title = group_title
-				try:	self.telegram_link = self.bot.exportChatInviteLink(chat_id)
+				try:	
+					self.telegram_link = self.bot.exportChatInviteLink(chat_id)
+					print(self.telegram_link)
 				except:	pass
 				if not self.is_set_location or not self.is_set_categoria:
 					
