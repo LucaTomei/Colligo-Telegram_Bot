@@ -10,6 +10,8 @@
 
 ### Checkout the [Youtube Video](https://youtu.be/86aQWj2rBxY)
 
+### Checkout on [Telegram])(https://t.me/ColliGoBot) 
+
 ## Installazione
 
 ```shell
