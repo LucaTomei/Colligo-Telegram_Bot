@@ -34,7 +34,6 @@ class Utils(object):
 		self.write_json_file(self.db_file, contentOfFile)
 
 
-
 	def registerAnUser(self, chat_id):
 		contentOfFile = self.getContentOfFile(self.db_file)
 		if not self.is_user_just_in_db(chat_id):
@@ -68,9 +67,10 @@ class Utils(object):
 		return response.json()
 
 	def from_lat_lng_to_address(self, lat, lng):
-		url = 'https://geocode.xyz/'+str(lat) + ','+ str(lng) + '?geoit=json'
+		url = 'https://geocode.xyz/'+str(lat) + ','+ str(lng) + '?json=1'
 		raw_location = requests.get(url).json()
-		if 'alt' in raw_location:
+		if 'alt' in raw_location and len(raw_location['alt']) != 0:
+			print(raw_location)
 			city = raw_location['city'].capitalize()
 			address = raw_location['alt']['loc'][0]['staddress'] + " " + raw_location['alt']['loc'][0]['stnumber']
 			postcode =  raw_location['alt']['loc'][0]['postal']
@@ -83,7 +83,15 @@ class Utils(object):
 				city = raw_location['town'].capitalize()
 				address = raw_location['road']
 				postcode =  raw_location['postcode']
+			elif 'village' in raw_location:
+				city =  raw_location['village'].capitalize()
+				if 'road' in raw_location:
+					address = 'via ' + raw_location['road']
+				else:
+					address = 'via ' + raw_location['county']
+				postcode =  raw_location['postcode']
 		return (city, address, str(postcode))
+		
 
 	def from_category_name_to_ids(self, categoriesNamesList):
 		toRet = []
@@ -92,18 +100,24 @@ class Utils(object):
 		print("Lista:", toRet)
 		return list(set(toRet))
 
-	def post_shop_details(self, group_title,lat, lng, categories, website,username = ''):
-		if username == '':	username = group_title
-		url = self.base_request_url + '/shops'
-		(city, address, postcode) = self.from_lat_lng_to_address(lat, lng)
-		if website == '':
-			to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng),"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username,'categories_ids': self.from_category_name_to_ids(categories)}
-		else:
-			to_post = {'name':group_title + "_" + str(lat) + "_" + str(lng),"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
-		print(to_post)
-		response = requests.post(url = url, json = to_post)
-		#print(response.json(), response.status_code)
-		return response.status_code
+	def post_shop_details(self, group_title, categories, website,username = '', lat = '', lng = '', address = '', city = '', postcode = ''):
+		try:
+			if username == '':	username = group_title
+			url = self.base_request_url + '/shops'
+			if city == '' or address == '' or postcode == '':
+				(city, address, postcode) = self.from_lat_lng_to_address(lat, lng)
+			if website == '':
+					to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username,'categories_ids': self.from_category_name_to_ids(categories)}
+			else:
+				to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":"@"+username, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
+			print(to_post)
+			response = requests.post(url = url, json = to_post)
+			print(response.json(), response.status_code)
+			return response.status_code
+		except Exception as e:
+			print(str(e))
+			return 400
+
 
 
 if __name__ == '__main__':
