@@ -41,7 +41,7 @@ class Bot(object):
 		
 		self.error_message = "Qualcosa è andato storto con la registrazione del tuo negozio\nRicominciamo la registrazione dall'inizio."
 
-		self.location_error_message =  "Non è stato possibile salvare la posizione del tuo negozio.\nInseriscila manualmente attenendoti al seguente formato: *via*, *CAP*, *città*.\nEsempio: *Via corcolle 30, 00123, Roma*"
+		self.location_error_message =  "Non è stato possibile salvare la posizione del tuo negozio.\nInseriscila manualmente attenendoti al seguente formato: *via*, *CAP*, *città*.\nEsempio: *Via corcolle 30, 00131, Roma*"
 
 		self.resetAllVariables()
 		

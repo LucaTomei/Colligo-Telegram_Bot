@@ -7,7 +7,7 @@ class Utils(object):
 
 		self.db_file = self.root_file_folder + "db.json"
 
-		self.base_request_url = "https://boiling-beyond-07880.herokuapp.com/"
+		self.base_request_url = "https://api.colligo.shop/"
 
 	def is_user_just_in_db(self, chat_id):
 		contentOfFile = self.getContentOfFile(self.db_file)['users']
@@ -67,29 +67,21 @@ class Utils(object):
 		return response.json()
 
 	def from_lat_lng_to_address(self, lat, lng):
-		url = 'https://geocode.xyz/'+str(lat) + ','+ str(lng) + '?json=1'
-		raw_location = requests.get(url).json()
-		if 'alt' in raw_location and len(raw_location['alt']) != 0:
-			print(raw_location)
-			city = raw_location['city'].capitalize()
-			address = raw_location['alt']['loc'][0]['staddress'] + " " + raw_location['alt']['loc'][0]['stnumber']
-			postcode =  raw_location['alt']['loc'][0]['postal']
-		else:
-			geolocator = Nominatim(user_agent='ColliGoBot')
-			location = geolocator.reverse(str(lat) + ',' + str(lng))
-			raw_location = location.raw['address']
-			print(raw_location)
-			if 'town' in raw_location:
-				city = raw_location['town'].capitalize()
-				address = raw_location['road']
-				postcode =  raw_location['postcode']
-			elif 'village' in raw_location:
-				city =  raw_location['village'].capitalize()
-				if 'road' in raw_location:
-					address = 'via ' + raw_location['road']
-				else:
-					address = 'via ' + raw_location['county']
-				postcode =  raw_location['postcode']
+		geolocator = Nominatim(user_agent='ColliGoBot')
+		location = geolocator.reverse(str(lat) + ',' + str(lng))
+		raw_location = location.raw['address']
+		print(raw_location)
+		if 'town' in raw_location:
+			city = raw_location['town'].capitalize()
+			address = raw_location['road']
+			postcode =  raw_location['postcode']
+		elif 'village' in raw_location:
+			city =  raw_location['village'].capitalize()
+			if 'road' in raw_location:
+				address = 'via ' + raw_location['road']
+			else:
+				address = 'via ' + raw_location['county']
+			postcode =  raw_location['postcode']
 		return (city, address, str(postcode))
 		
 
@@ -110,15 +102,17 @@ class Utils(object):
 			if city == '' or address == '' or postcode == '':
 				(city, address, postcode) = self.from_lat_lng_to_address(lat, lng)
 			if website == '':
-					to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":telegram,'categories_ids': self.from_category_name_to_ids(categories)}
+					to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":telegram,'categories_ids': self.from_category_name_to_ids(categories), "accepts_terms_and_conditions":True}
 			else:
-				to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":telegram, "website":website,'categories_ids': self.from_category_name_to_ids(categories)}
+				to_post = {'name':group_title,"city":city ,"address": address, "cap":postcode,"description":group_title, "telegram":telegram, "website":website,'categories_ids': self.from_category_name_to_ids(categories), "accepts_terms_and_conditions":True}
 			#print(to_post)
 			response = requests.post(url = url, json = to_post)
+			print(response.status_code, response.text)
 			#print(response.json(), response.status_code)
 			return response.status_code
 		except Exception as e:
 			#print(str(e))
+			print(str(e))
 			return 400
 
 
