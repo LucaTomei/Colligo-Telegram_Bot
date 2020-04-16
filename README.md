@@ -1,4 +1,4 @@
-# EasyCollectTelegramBot
+# Colligo-Telegram_Bot
 
 ## Screenshots
 
@@ -8,7 +8,7 @@
 	<img src="Screenshots/8.PNG" width="400px"</img> 
 </div>
 
-### Checkout the [Youtube Video](https://youtu.be/86aQWj2rBxY)
+### Checkout the [Youtube Video](https://www.youtube.com/watch?v=dgwotDhMSyo&feature=youtu.be)
 
 ### Checkout on [Telegram](https://t.me/ColliGoBot) 
 
@@ -19,13 +19,3 @@
 	pip install -r requirements.txt
 	python bot.py
 ```
-
-
-## Commerciante
-
-- Crea un gruppo e aggiunge il bot come amministratore
-- Riferisce al bot che categorie di negozio ha, massimo tre scelte
-- Riferisce al bot dove si trova il negozio
-- A questo punto la registrazione del suo negozio è completata con successo
-- Salvataggio credenziali utente su file
-
