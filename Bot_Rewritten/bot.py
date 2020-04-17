@@ -23,25 +23,47 @@ class Bot(object):
 
 	#---------[You have pressed YES WEBSITE BUTTON]---------
 	def you_have_website(self, update, context):
-		update.message.reply_text("Hai un sito", parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
-		return 0
+		update.message.reply_text(bot_replies['insert_website'], parse_mode=ParseMode.MARKDOWN, reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+		return 1
+	
+	def register_website_handler(self, update, context):
+		context.user_data['website'] = update.message.text 	# Save user website in user_data
+		update.message.reply_text(bot_replies['website_added'] % (update.message.text), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+		return ConversationHandler.END
+
 
 	#---------[You have pressed NO WEBSITE BUTTON]---------
-	def yout_dont_have_website(self, update, context):
-		update.message.reply_text("non hai un sito", parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+	def yout_dont_have_website(self, update, context):	# if you don't have website return 2
+		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+		return ConversationHandler.END
+
+
+	def category_main_handler(self, update, context):
+		update.message.reply_text(bot_replies['category_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
 		return 0
 
+	def filter_categories_handler(self, update, context):
+		update.message.reply_text("Sono qui con " + update.message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+		pass
+
+
+	def location_main_handler(self, update, context):
+		pass
+	
 	def main_conversation_handler(self):
 		main_conversation_handler = ConversationHandler(
             [	# Entry Points
-            	MessageHandler(Filters.regex('^' + bot_buttons['yes'] +'$'),self.you_have_website),
-            	MessageHandler(Filters.regex('^' + bot_buttons['no'] +'$'),self.yout_dont_have_website),
+            	MessageHandler(Filters.regex('^' + bot_buttons['category'] +'$'),self.category_main_handler),
+            	MessageHandler(Filters.regex('^' + bot_buttons['location'] +'$'),self.location_main_handler),
+        		MessageHandler(Filters.text,unknown_function),
             ], 
             {
-            	0:[
-            		#PrefixHandler(bot_buttons['back'][0], bot_buttons['back'][1:], unknown_function),
-            		MessageHandler(Filters.text,unknown_function),
+            	0: [	# Starting main handler
+            		# Bisogna verificare anche la pressione del tasto fine e quindi se ha inserito almeno una categoria
+            		MessageHandler(Filters.text, self.filter_categories_handler),
             	],
+            	
             	# 1:[
             	# 	PrefixHandler(bot_buttons['back'][0], bot_buttons['back'][1:], self.downloader_main_handler),
             	# 	MessageHandler(Filters.regex('^' + bot_buttons['top_chart'] +'$'),self.download_chart_handler),
@@ -64,10 +86,29 @@ class Bot(object):
             },[])
 		return main_conversation_handler
 
+
+
+	def preamble_conversation_handler(self):
+		preamble_conversation_handler = ConversationHandler(
+            [	# Entry Points
+            	MessageHandler(Filters.regex('^' + bot_buttons['yes'] +'$'),self.you_have_website),
+            	MessageHandler(Filters.regex('^' + bot_buttons['no'] +'$'),self.yout_dont_have_website),
+            ], 
+            {
+            	0:[	
+            		MessageHandler(Filters.text,unknown_function),
+            	],
+            	1:[	# state for register website
+            		MessageHandler(Filters.text,self.register_website_handler)
+            	],         	
+            },[])
+		return preamble_conversation_handler
+
 	
 	def register_all_handlers(self, dp):
 		dp.add_handler(CommandHandler('start', self.start))
 		dp.add_handler(MessageHandler(Filters.status_update, self.status_update))
+		dp.add_handler(self.preamble_conversation_handler())
 		dp.add_handler(self.main_conversation_handler())
 		dp.add_handler(MessageHandler(Filters.text, unknown_function))
 

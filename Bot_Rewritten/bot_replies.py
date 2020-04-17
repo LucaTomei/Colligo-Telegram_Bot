@@ -5,10 +5,12 @@ import re, os, requests, sys, time, json
 
 from datetime import datetime
 
+from utilities import Utility
+
+Utility_Obj = Utility()
 
 
-
-BOT_TOKEN = "990488789:AAFwcnMKXMwJd-GnwSgryCWwZome0Ebz1XQ"
+BOT_TOKEN = "1140474924:AAEEt2LD6Hg0TRXZDZU7HoHullUtEqNQAPc"	# t.me/Colligo_Development_Bot
 Bot_Obj = Bot(BOT_TOKEN)
 
 #---------[Some Strings]---------
@@ -29,7 +31,8 @@ bot_replies = {
 	"category_yes_no": "Sei sicuro di voler aggiungere la categoria *%s*?",
 
 	"location_done": "Posizione Registrata: *[%s, %s]*",
-	"website_added": "*Sito Web %s impostato con successo*\n",
+	"website_added": "*Sito Web %s impostato con successo*",
+	"insert_website": "*Inserisci il link al tuo sito web*",
 
 
 	"all_done": "Tutto impostato con successo:\nCategorie del negozio: *%s*\nPosizione del negozio: *%s*.",
@@ -38,7 +41,6 @@ bot_replies = {
 
 }
 
-
 #---------[Keyboard Buttons]---------
 bot_buttons = {
 	"category": "🥐 Categoria 🍷",
@@ -46,7 +48,16 @@ bot_buttons = {
 
 	"yes": "👍 SI 👍",
 	"no": "👎 NO 👎",
+
+	"stop_button": "Fine",
 }
+
+def makeAKeyboard(alist, parti):
+    length = len(alist)
+    keyboard =  [alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
+    keyboard.append([bot_buttons['stop_button']])
+    return ReplyKeyboardMarkup(keyboard)
+
 
 main_keyboard = ReplyKeyboardMarkup([
 	[bot_buttons['category']],
@@ -57,6 +68,11 @@ yes_no_keyboard = ReplyKeyboardMarkup([
 	[bot_buttons['yes']],
 	[bot_buttons['no']]
 ])
+
+categories_names_list = Utility_Obj.get_all_merchant_categories()	# Contains all categories names
+
+
+categories_keyboard = makeAKeyboard(categories_names_list, 4)
 
 #---------[Useful Functions]---------
 def unknown_function(update, context):
@@ -74,9 +90,3 @@ def unknown_function(update, context):
 def debug(con=None):
 	message = "Sono qui con " + str(con) if con != None else "Sono qui"
 	os.system("echo " + message)
-
-def makeAKeyboard(self,alist, parti):
-    length = len(alist)
-    keyboard =  [alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
-    keyboard.append([self.stop_button])
-    return keyboard

@@ -19,4 +19,5 @@ class Utility(object):
 		for item in self.retrieveMerchantCategories():
 			if item['name'] in categoriesNamesList:	toRet.append(item['id'])
 		return list(set(toRet))
-
+	#---------[END CATEGORIES FUNCTIONS]---------
+	
