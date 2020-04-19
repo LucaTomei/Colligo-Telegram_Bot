@@ -49,6 +49,9 @@ bot_buttons = {
 	"yes": "👍 SI 👍",
 	"no": "👎 NO 👎",
 
+	"yes_category": "SI 👍",
+	"no_category": "NO 👎",
+
 	"stop_button": "Fine",
 }
 
@@ -64,9 +67,24 @@ main_keyboard = ReplyKeyboardMarkup([
 	[bot_buttons['location']]
 ])
 
+main_keyboard_only_location = ReplyKeyboardMarkup([
+	[bot_buttons['location']]
+])
+
+main_keyboard_only_categories = ReplyKeyboardMarkup([
+	[bot_buttons['category']]
+])
+
+main_keyboard_empty = ReplyKeyboardRemove()
+
 yes_no_keyboard = ReplyKeyboardMarkup([
 	[bot_buttons['yes']],
 	[bot_buttons['no']]
+])
+
+yes_no_categories_keyboard = ReplyKeyboardMarkup([
+	[bot_buttons['yes_category']],
+	[bot_buttons['no_category']]
 ])
 
 categories_names_list = Utility_Obj.get_all_merchant_categories()	# Contains all categories names
@@ -77,16 +95,24 @@ categories_keyboard = makeAKeyboard(categories_names_list, 4)
 #---------[Useful Functions]---------
 def unknown_function(update, context):
 	try:
+		chat_id = update.message.chat_id
 		first_name = update.message.chat.first_name
+		first_name = first_name if first_name != None else update.message.from_user.first_name
+		Utility_Obj.set_user_data(chat_id, context, main_keyboard)
 		group_title = update.message.chat.title
 		if 'group' in update.message.chat.type:
-			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['dealer_welcome_message'] % (first_name, group_title), reply_markup=main_keyboard,  parse_mode = ParseMode.MARKDOWN)
+			if Utility_Obj.has_done_location(chat_id, context) and Utility_Obj.has_done_categories(chat_id, context):
+				user_categories = Utility_Obj.get_user_categories(chat_id, context)
+				user_location = Utility_Obj.get_user_location(chat_id, context)
+				message_to_send = bot_replies['all_done'] % (str(user_categories), str(user_location))
+				context.bot.send_message(chat_id=update.effective_chat.id, text = message_to_send, reply_markup=Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context),  parse_mode = ParseMode.MARKDOWN)
+			else:
+				context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['main_message'], reply_markup=Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context),  parse_mode = ParseMode.MARKDOWN)
 		else:
 			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
-		context.user_data.clear()
-	except Exception as e:print(str(e))
-	return ConversationHandler.END
+		return ConversationHandler.END
+	except Exception as e:	print(str(e))
 
 def debug(con=None):
 	message = "Sono qui con " + str(con) if con != None else "Sono qui"
-	os.system("echo " + message)
+	print(message)

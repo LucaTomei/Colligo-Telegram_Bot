@@ -1,24 +1,22 @@
 from bot_replies import *
 
+
 class Bot(object):
 	def __init__(self):
 		pass
 
+
 	def start(self, update, context):
+		chat_id = update.message.chat_id
+		Utility_Obj.set_user_data(chat_id, context,main_keyboard)
 		first_name = update.message.chat.first_name
+		first_name = first_name if first_name != None else update.message.from_user.first_name
 		group_title = update.message.chat.title
 		if 'group' in update.message.chat.type:
 			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['dealer_welcome_message'] % (first_name, group_title), reply_markup=yes_no_keyboard,  parse_mode = ParseMode.MARKDOWN)
 		else:
 			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
-		
-
-	#---------[Check if bot was added to a group or supergroup or to a channel]---------
-	def status_update(self, update, context):
-		if update.message.group_chat_created or update.message.supergroup_chat_created or update.message.channel_chat_created:
-			return self.start(update, context)
-		else:
-			return unknown_function(update, context)
+	
 		
 
 	#---------[You have pressed YES WEBSITE BUTTON]---------
@@ -27,7 +25,8 @@ class Bot(object):
 		return 1
 	
 	def register_website_handler(self, update, context):
-		context.user_data['website'] = update.message.text 	# Save user website in user_data
+		chat_id = update.message.chat_id
+		Utility_Obj.set_user_website(chat_id, update.message.text, context)	# Save user website in user_data
 		update.message.reply_text(bot_replies['website_added'] % (update.message.text), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
 		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
 		return ConversationHandler.END
@@ -44,12 +43,61 @@ class Bot(object):
 		return 0
 
 	def filter_categories_handler(self, update, context):
-		update.message.reply_text("Sono qui con " + update.message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
-		pass
+		Utility_Obj.set_tmp_category(update.message.chat_id, update.message.text, context)
+		update.message.reply_text(bot_replies['category_yes_no'] % update.message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=yes_no_categories_keyboard, disable_web_page_preview=True)
+		return 1
 
+	def add_category_handler(self, update, context):
+		chat_id = update.message.chat_id
+		category = Utility_Obj.get_tmp_category(update.message.chat_id, context)
+		Utility_Obj.set_user_category(chat_id, category, context)
+		update.message.reply_text(bot_replies['catagory_added'] % category, parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+		return 0
+
+	def check_user_categories_handler(self, update, context):
+		chat_id = update.message.chat_id
+		user_categories = Utility_Obj.get_user_categories(chat_id, context)
+		if len(user_categories) != 0:
+			if Utility_Obj.has_done_location(chat_id, context):
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+			else:
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_location, context)
+			main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+			Utility_Obj.set_categories_done(chat_id, context)
+			update.message.reply_text(bot_replies['catagories_done'] % str(user_categories), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+			if Utility_Obj.has_done_location(chat_id, context):
+				user_location = Utility_Obj.get_user_location(chat_id, context)
+				update.message.reply_text(bot_replies['all_done'] % (str(user_categories), str(user_location)), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
+		else:
+			update.message.reply_text(bot_replies['category_error_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+			return 0	
 
 	def location_main_handler(self, update, context):
-		pass
+		update.message.reply_text(bot_replies['position_message'], parse_mode=ParseMode.MARKDOWN, reply_markup = ReplyKeyboardRemove(), disable_web_page_preview=True)
+		return 2
+
+	def set_user_location_handler(self, update, context):
+		try:
+			chat_id = update.message.chat_id
+			location = update.message.location
+			tupla_location = (latitude, longitude) = (location.latitude, location.longitude)
+			Utility_Obj.set_user_location(chat_id, tupla_location, context)
+			Utility_Obj.set_location_done(chat_id, context)
+
+			if Utility_Obj.has_done_categories(chat_id, context):
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+				user_categories = Utility_Obj.get_user_categories(chat_id, context)
+				
+				message_to_send = bot_replies['all_done'] % (str(user_categories), str(tupla_location))
+			else:
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_categories, context)
+				message_to_send = bot_replies['main_message']
+			main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+			
+			update.message.reply_text(message_to_send, parse_mode=ParseMode.MARKDOWN, reply_markup = main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
+		except Exception as e:	print(str(e))
 	
 	def main_conversation_handler(self):
 		main_conversation_handler = ConversationHandler(
@@ -60,29 +108,17 @@ class Bot(object):
             ], 
             {
             	0: [	# Starting main handler
-            		# Bisogna verificare anche la pressione del tasto fine e quindi se ha inserito almeno una categoria
+            		MessageHandler(Filters.regex('^' + bot_buttons['stop_button'] +'$'), self.check_user_categories_handler),
             		MessageHandler(Filters.text, self.filter_categories_handler),
             	],
-            	
-            	# 1:[
-            	# 	PrefixHandler(bot_buttons['back'][0], bot_buttons['back'][1:], self.downloader_main_handler),
-            	# 	MessageHandler(Filters.regex('^' + bot_buttons['top_chart'] +'$'),self.download_chart_handler),
-            	# 	MessageHandler(Filters.regex('^' + bot_buttons['single_track'] +'$'),self.search_for_result_handler),
-            	# 	MessageHandler(Filters.regex('^' + bot_buttons['playlist'] +'$'),self.search_for_result_handler),
-            	# 	MessageHandler(Filters.regex('^' + bot_buttons['album'] +'$'),self.search_for_result_handler),
-            	# 	MessageHandler(Filters.text,self.downloader_main_handler)
-            	# ],
-            	# 2:[
-            	# 	PrefixHandler(bot_buttons['back'][0], bot_buttons['back'][1:], self.back_to_music_menu),
-            	# 	MessageHandler(Filters.text,self.chart_downloader_handler)
-            	# ],
-            	# 3: [
-            	# 	MessageHandler(Filters.text,self.choice_track_handler)
-            	# ],
-            	# 4: [
-            	# 	PrefixHandler(bot_buttons['back'][0], bot_buttons['back'][1:], self.back_to_music_menu),
-            	# 	MessageHandler(Filters.text,self.download_track_album_playlist_handler)
-            	# ]            	
+            	1: [	# category_yes_no
+            		MessageHandler(Filters.regex('^' + bot_buttons['yes_category'] +'$'),self.add_category_handler),
+            		MessageHandler(Filters.regex('^' + bot_buttons['no_category'] +'$'),self.category_main_handler),
+            	],
+            	2:[		# Location
+            		MessageHandler(Filters.text,unknown_function),
+            		MessageHandler(Filters.location,self.set_user_location_handler),
+            	]      	
             },[])
 		return main_conversation_handler
 
@@ -107,7 +143,7 @@ class Bot(object):
 	
 	def register_all_handlers(self, dp):
 		dp.add_handler(CommandHandler('start', self.start))
-		dp.add_handler(MessageHandler(Filters.status_update, self.status_update))
+		dp.add_handler(MessageHandler(Filters.status_update, self.start))
 		dp.add_handler(self.preamble_conversation_handler())
 		dp.add_handler(self.main_conversation_handler())
 		dp.add_handler(MessageHandler(Filters.text, unknown_function))
