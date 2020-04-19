@@ -43,9 +43,26 @@ class Bot(object):
 		return 0
 
 	def filter_categories_handler(self, update, context):
-		Utility_Obj.set_tmp_category(update.message.chat_id, update.message.text, context)
-		update.message.reply_text(bot_replies['category_yes_no'] % update.message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=yes_no_categories_keyboard, disable_web_page_preview=True)
-		return 1
+		chat_message = update.message.text
+		chat_id = update.message.chat_id
+		user_categories = Utility_Obj.get_user_categories(chat_id, context)
+		if len(user_categories) != 3:
+			if chat_message in [j for i in categories_keyboard.keyboard for j in i]:
+				Utility_Obj.set_tmp_category(update.message.chat_id, update.message.text, context)
+				update.message.reply_text(bot_replies['category_yes_no'] % update.message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=yes_no_categories_keyboard, disable_web_page_preview=True)
+				return 1
+			else:
+				update.message.reply_text(bot_replies['category_error_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+				return 0
+		else:
+			if Utility_Obj.has_done_location(chat_id, context):
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+			else:
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_location, context)
+			main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+			update.message.reply_text(bot_replies['catagories_done'] % (str(user_categories)), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
+
 
 	def add_category_handler(self, update, context):
 		chat_id = update.message.chat_id

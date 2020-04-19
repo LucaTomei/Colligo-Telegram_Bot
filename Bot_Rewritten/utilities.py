@@ -12,7 +12,7 @@ class Utility(object):
 
 	def get_all_merchant_categories(self):
 		#json_content = self.retrieve_merchant_categories()
-		return ["Altro", "Pescivendolo", "Macelleria", "Salumenria", "Dio", "Porco"] #[item['name'] for item in json_content]
+		return ["Altro", "Pescivendolo", "Macelleria", "Salumenria", "ok", "bog", "ajasksa", "sakjksaks"] #[item['name'] for item in json_content]
 
 	def from_category_name_to_ids(self, categoriesNamesList):
 		toRet = []
@@ -40,7 +40,7 @@ class Utility(object):
 		context.user_data[chat_id]['main_keyboard'] = main_keyboard
 
 	def get_user_categories(self, chat_id, context):
-		return context.user_data[chat_id]['categories_list']
+		return list(set(context.user_data[chat_id]['categories_list']))
 	def set_user_category(self, chat_id, category, context):
 		context.user_data[chat_id]['categories_list'].append(category)
 
