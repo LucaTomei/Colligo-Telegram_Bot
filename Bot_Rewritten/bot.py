@@ -1,22 +1,24 @@
 from bot_replies import *
 
-
 class Bot(object):
 	def __init__(self):
 		pass
 
 
 	def start(self, update, context):
+		try:
+			telegram_link = context.bot.exportChatInviteLink(update.message.chat.id)
+		except Exception as e:
+			telegram_link = ""
 		chat_id = update.message.chat_id
-		Utility_Obj.set_user_data(chat_id, context,main_keyboard)
+		group_title = update.message.chat.title
+		Utility_Obj.set_user_data(chat_id, context, main_keyboard, telegram_link, group_title)
 		first_name = update.message.chat.first_name
 		first_name = first_name if first_name != None else update.message.from_user.first_name
-		group_title = update.message.chat.title
 		if 'group' in update.message.chat.type:
 			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['dealer_welcome_message'] % (first_name, group_title), reply_markup=yes_no_keyboard,  parse_mode = ParseMode.MARKDOWN)
 		else:
 			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
-	
 		
 
 	#---------[You have pressed YES WEBSITE BUTTON]---------
@@ -24,6 +26,11 @@ class Bot(object):
 		update.message.reply_text(bot_replies['insert_website'], parse_mode=ParseMode.MARKDOWN, reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
 		return 1
 	
+	#---------[You have pressed NO WEBSITE BUTTON]---------
+	def yout_dont_have_website(self, update, context):	# if you don't have website return 2
+		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+		return ConversationHandler.END
+
 	def register_website_handler(self, update, context):
 		chat_id = update.message.chat_id
 		Utility_Obj.set_user_website(chat_id, update.message.text, context)	# Save user website in user_data
@@ -31,11 +38,6 @@ class Bot(object):
 		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
 		return ConversationHandler.END
 
-
-	#---------[You have pressed NO WEBSITE BUTTON]---------
-	def yout_dont_have_website(self, update, context):	# if you don't have website return 2
-		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
-		return ConversationHandler.END
 
 
 	def category_main_handler(self, update, context):
@@ -131,6 +133,7 @@ class Bot(object):
             	1: [	# category_yes_no
             		MessageHandler(Filters.regex('^' + bot_buttons['yes_category'] +'$'),self.add_category_handler),
             		MessageHandler(Filters.regex('^' + bot_buttons['no_category'] +'$'),self.category_main_handler),
+            		MessageHandler(Filters.text, self.filter_categories_handler),
             	],
             	2:[		# Location
             		MessageHandler(Filters.text,unknown_function),

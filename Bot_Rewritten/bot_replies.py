@@ -95,11 +95,15 @@ categories_keyboard = makeAKeyboard(categories_names_list, 4)
 #---------[Useful Functions]---------
 def unknown_function(update, context):
 	try:
+		try:
+			telegram_link = context.bot.exportChatInviteLink(update.message.chat.id)
+		except:
+			telegram_link = ""
 		chat_id = update.message.chat_id
 		first_name = update.message.chat.first_name
 		first_name = first_name if first_name != None else update.message.from_user.first_name
-		Utility_Obj.set_user_data(chat_id, context, main_keyboard)
 		group_title = update.message.chat.title
+		Utility_Obj.set_user_data(chat_id, context, main_keyboard, telegram_link, group_title)
 		if 'group' in update.message.chat.type:
 			if Utility_Obj.has_done_location(chat_id, context) and Utility_Obj.has_done_categories(chat_id, context):
 				user_categories = Utility_Obj.get_user_categories(chat_id, context)
