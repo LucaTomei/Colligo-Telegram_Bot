@@ -33,7 +33,8 @@ bot_replies = {
 	"location_done": "Posizione Registrata: *[%s, %s]*",
 	"website_added": "*Sito Web %s impostato con successo*",
 	"insert_website": "*Inserisci il link al tuo sito web*",
-
+	"website_error": "*Il sito %s non rispecchia lo schema di un sito web: Sei sicuro che il messaggio contenga 'http://'?\nInserisci di nuovo il link al tuo sito web [q per uscire].*",
+	"website_not_insert": "*Sito web non inserito.*",
 
 	"all_done": "Tutto impostato con successo:\nCategorie del negozio: *%s*\nPosizione del negozio: *%s*.",
 
@@ -95,26 +96,28 @@ categories_keyboard = makeAKeyboard(categories_names_list, 4)
 #---------[Useful Functions]---------
 def unknown_function(update, context):
 	try:
-		try:
-			telegram_link = context.bot.exportChatInviteLink(update.message.chat.id)
-		except:
-			telegram_link = ""
 		chat_id = update.message.chat_id
 		first_name = update.message.chat.first_name
 		first_name = first_name if first_name != None else update.message.from_user.first_name
 		group_title = update.message.chat.title
-		Utility_Obj.set_user_data(chat_id, context, main_keyboard, telegram_link, group_title)
-		if 'group' in update.message.chat.type:
-			if Utility_Obj.has_done_location(chat_id, context) and Utility_Obj.has_done_categories(chat_id, context):
-				user_categories = Utility_Obj.get_user_categories(chat_id, context)
-				user_location = Utility_Obj.get_user_location(chat_id, context)
-				message_to_send = bot_replies['all_done'] % (str(user_categories), str(user_location))
-				context.bot.send_message(chat_id=update.effective_chat.id, text = message_to_send, reply_markup=Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context),  parse_mode = ParseMode.MARKDOWN)
+		Utility_Obj.set_user_data(chat_id, context, main_keyboard, group_title)
+		telegram_link = Utility_Obj.set_telegram_link(update, context)
+		print("has_done", Utility_Obj.check_if_user_has_done(chat_id, context))
+		if not Utility_Obj.check_if_user_has_done(chat_id, context):
+			if 'group' in update.message.chat.type:
+				if Utility_Obj.has_done_location(chat_id, context) and Utility_Obj.has_done_categories(chat_id, context):
+					user_categories = Utility_Obj.get_user_categories(chat_id, context)
+					user_location = Utility_Obj.get_user_location(chat_id, context)
+					message_to_send = bot_replies['all_done'] % (str(user_categories), str(user_location))
+					context.bot.send_message(chat_id=chat_id, text = message_to_send, reply_markup=Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context),  parse_mode = ParseMode.MARKDOWN)
+				else:
+					context.bot.send_message(chat_id=chat_id, text = bot_replies['main_message'], reply_markup=Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context),  parse_mode = ParseMode.MARKDOWN)
 			else:
-				context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['main_message'], reply_markup=Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context),  parse_mode = ParseMode.MARKDOWN)
+				context.bot.send_message(chat_id=chat_id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
+			return ConversationHandler.END
 		else:
-			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
-		return ConversationHandler.END
+			print("Fine Cazzo")
+			return ConversationHandler.END
 	except Exception as e:	print(str(e))
 
 def debug(con=None):
