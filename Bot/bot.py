@@ -1,265 +1,261 @@
-import json, requests, telepot, time
-from telepot.loop import MessageLoop
-from telepot.namedtuple import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
+from bot_replies import *
 
-from utils import Utils
-
-# 	Dopo aver inviato la roba tramite rest devo resettare le variabili locali -----|
-#	self.resetAllVariables()	<--------------------------------------------------|
-
-# Check se negozio è già presente
- 
 class Bot(object):
 	def __init__(self):
-		self.Utils_obj = Utils()
-		self.bot_token = self.Utils_obj.getToken()	# contiene il token del bot
+		pass
 
-		self.bot = telepot.Bot(self.bot_token)
 
-		# Definizione Bottoni tastiera
-		self.button_location = "📍 Posizione 📍"
-		self.button_categoty = "🥐 Categoria 🍷"
-		self.stop_button = "Fine"
-		self.other_categories_button = "Altro"
-		self.yes_button = "👍 SI 👍"
-		self.no_button = "👎 NO 👎"
-
-		categories_list = self.Utils_obj.getAllMerchantCategories()
-		self.categories_keyboard = self.makeAKeyboard(categories_list, 6)
-		
-		self.main_keyboard = [[self.button_categoty],[self.button_location]]
-
-		self.yes_no_keyboard = [[self.yes_button],[self.no_button]]
-		
-
-		self.category_message = "Seleziona a quale categoria appartiene il tuo negozio.(Max 3)\n*[Premere il pulsante Fine per terminare la selezione]*"
-		self.position_message = "Inviami la posizione(clicca sulla spilla e seleziona *Posizione*, quindi seleziona *Invia posizione corrente*)"
-		self.main_message = "Utilizza la tastiera sottostante"
-		self.category_error_message = "Inserire almeno una tra le categorie elencate"
-
-		self.description_message =  "Attraverso i pannelli sottostanti potrai selezionare le categorie che descrivono il tuo negozio e condividere la tua posizione con i clienti."
-		
-		self.error_message = "Qualcosa è andato storto con la registrazione del tuo negozio\nRicominciamo la registrazione dall'inizio."
-
-		self.location_error_message =  "Non è stato possibile salvare la posizione del tuo negozio.\nInseriscila manualmente attenendoti al seguente formato: *via*, *CAP*, *città*.\nEsempio: *Via corcolle 30, 00131, Roma*"
-
-		self.resetAllVariables()
-		
-	def makeAKeyboard(self,alist, parti):
-	    length = len(alist)
-	    keyboard =  [alist[i*length // parti: (i+1)*length // parti] for i in range(parti)]
-	    keyboard.append([self.stop_button])
-	    return keyboard
-
-	def resetAllVariables(self):
-		self.main_keyboard = [[self.button_categoty],[self.button_location]]
-		self.group_title = ''
-		self.username = ''
-
-		self.added_categories = []
-		self.myLocation = (None, None)
-		self.is_super_group_flag = False
-		self.max_categories = 3
-		self.count_categories = 0
-		self.is_set_categoria = False
-		self.is_set_location = False
-		self.i_can_send_location = False
-		self.myLocation = (None, None)
-		self.yes_no_step = (False, None)
-		self.webSiteName = ""
-		self.webSiteStep = 0
-		self.location_error_step = 0
-		self.telegram_link = ''
-
-	def send_welcome_message(self, chat_id, first_name, group_title):
-		self.group_title = group_title
-		toSend = "Benvenuto *" + first_name + "*  del negozio *" + group_title + "* sono ColliGo, il bot che ti accompagnerà nella vendita online della tua attività.\nHai un sito web del negozio?"
-		self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.yes_no_keyboard},parse_mode= 'Markdown')
-		self.webSiteStep = 1
-
-	def main_keyboard_handler(self, chat_id ,chat_message):
-		if chat_message == self.button_categoty:
-			self.bot.sendMessage(chat_id, text=self.category_message, reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
-		elif chat_message == self.button_location:
-			self.bot.sendMessage(chat_id, text=self.position_message,parse_mode= 'Markdown', reply_markup = ReplyKeyboardRemove())
-			self.i_can_send_location = True
-
-	def yes_no_handler(self, chat_id, chat_message):
-		category = self.yes_no_step[1]
-		if chat_message == self.yes_button:
-			self.added_categories.append(category)
-			self.count_categories += 1
-			# rimozione bottone categoria dalla tastiera principale
-			if self.count_categories == self.max_categories:
-				self.main_keyboard = [[self.button_location]]
-				self.is_set_categoria = True
-				toSend = "Ecco le categorie che hai impostato\n*" + str(self.added_categories) + "*"
-				if self.is_set_location:
-					toSend = toSend + ", questa è la posizione del tuo negozio " + str(self.myLocation[1])
-					self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-				else:
-					self.bot.sendMessage(chat_id, text=toSend, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-			else:
-				self.bot.sendMessage(chat_id, text="Categoria *" + category +"* aggiunta con successo.\n*[Premere il pulsante Fine per terminare la selezione]*", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
-		elif chat_message == self.no_button:
-			self.bot.sendMessage(chat_id, text="Inserire nuovamente la categoria", reply_markup={'keyboard': self.categories_keyboard},parse_mode= 'Markdown')
-		self.yes_no_step = (False, None)
-
-	def category_handler(self, chat_id, chat_message):
-		if chat_message == self.stop_button:
-			if len(self.added_categories) > 0:
-				self.is_set_categoria = True
-				if not self.is_set_location:
-					self.main_keyboard = [[self.button_location]]
-					toSend = "Ecco le categorie che hai impostato\n*" + str(self.added_categories) + "*"
-					self.bot.sendMessage(chat_id, text= toSend, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-				else:
-					lat, lng = self.myLocation
-					status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username,lat, lng, telegram = self.telegram_link)
-					if status_code == 200: 
-						toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
-						self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-						self.resetAllVariables()
-						self.Utils_obj.stop_user(chat_id)
-					else:
-						self.bot.sendMessage(chat_id, text= self.location_error_message, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-						self.location_error_step = 1
-
-			else:
-				self.bot.sendMessage(chat_id, text=self.category_error_message, reply_markup = {'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-		if not self.is_set_categoria:
-			if chat_message not in self.added_categories:
-				if chat_message != self.stop_button:
-					self.bot.sendMessage(chat_id, text="Sei sicuro di voler aggiungere la categoria *" + chat_message + "*?", reply_markup={'keyboard': self.yes_no_keyboard},parse_mode= 'Markdown')
-					self.yes_no_step = (True, chat_message)
-			else:
-				self.bot.sendMessage(chat_id, text="Categoria di " + chat_message + " già aggiunta.", reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
-
-	def location_handler(self, chat_id, msg):
-		self.myLocation = (latitude, longitude) = (msg['location']['latitude'], msg['location']['longitude'])
-		toSend = "Posizione Registrata: *[" + str(latitude) + ", " + str(longitude) + "]*"
-		if not self.is_set_categoria:
-			self.main_keyboard = [[self.button_categoty]]
-			self.bot.sendMessage(chat_id, text=toSend,parse_mode= 'Markdown', reply_markup={'keyboard': self.main_keyboard})
-			self.is_set_location = True
+	def start(self, update, context):
+		chat_id = update.message.chat_id
+		group_title = update.message.chat.title
+		Utility_Obj.set_user_data(chat_id, context, main_keyboard, group_title)
+		Utility_Obj.set_telegram_link(update, context)
+		first_name = update.message.chat.first_name
+		first_name = first_name if first_name != None else update.message.from_user.first_name
+		if 'group' in update.message.chat.type:
+			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['dealer_welcome_message'] % (first_name, group_title), reply_markup=yes_no_keyboard,  parse_mode = ParseMode.MARKDOWN)
 		else:
-			status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username, latitude, longitude, telegram = self.telegram_link)
-			if status_code == 200: 
-				toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
-				self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-				self.resetAllVariables()
-				self.Utils_obj.stop_user(chat_id)
+			context.bot.send_message(chat_id=update.effective_chat.id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
+		
+
+	#---------[You have pressed YES WEBSITE BUTTON]---------
+	def you_have_website(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		update.message.reply_text(bot_replies['insert_website'], parse_mode=ParseMode.MARKDOWN, reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+		return 1
+	
+	#---------[You have pressed NO WEBSITE BUTTON]---------
+	def yout_dont_have_website(self, update, context):	# if you don't have website return 2
+		Utility_Obj.set_telegram_link(update, context)
+		update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+		return ConversationHandler.END
+
+	def register_website_handler(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		chat_id = update.message.chat_id
+		website = update.message.text
+		if website.lower() != 'q': 
+			if Utility_Obj.is_really_a_website(website):
+				Utility_Obj.set_user_website(chat_id, website, context)	# Save user website in user_data
+				update.message.reply_text(bot_replies['website_added'] % (website), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+				update.message.reply_text(bot_replies['description_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+				return ConversationHandler.END
 			else:
-				self.bot.sendMessage(chat_id, text= self.location_error_message, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-				self.location_error_step = 1
-			
-			
+				update.message.reply_text(bot_replies['website_error'] % website, parse_mode=ParseMode.MARKDOWN, reply_markup=ReplyKeyboardRemove(), disable_web_page_preview=True)
+				return 1	# loop until you add a valid website
+		else:
+			update.message.reply_text(bot_replies['website_not_insert'], parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
 
-	def main_handler(self, msg):
+
+
+	def category_main_handler(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		user_categories = Utility_Obj.get_user_categories(update.message.chat.id, context)
+		#print("[category_main_handler] categorie utente: ", user_categories)
+		update.message.reply_text(bot_replies['category_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+		return 0
+
+	def filter_categories_handler(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		chat_message = update.message.text
+		chat_id = update.message.chat_id
+		user_categories = Utility_Obj.get_user_categories(chat_id, context)
+		if len(user_categories) != 3:
+			if chat_message in [j for i in categories_keyboard.keyboard for j in i]:
+				Utility_Obj.set_tmp_category(update.message.chat_id, update.message.text, context)
+				update.message.reply_text(bot_replies['category_yes_no'] % update.message.text, parse_mode=ParseMode.MARKDOWN, reply_markup=yes_no_categories_keyboard, disable_web_page_preview=True)
+				return 1
+			else:
+				update.message.reply_text(bot_replies['category_error_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+				return 0
+		else:
+			if Utility_Obj.has_done_location(chat_id, context):
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+				tupla_location = Utility_Obj.get_user_location(chat_id, context)
+				message_to_send = bot_replies['all_done'] % (str(user_categories), str(tupla_location))
+				Utility_Obj.post_shop_details(chat_id, context)
+			else:
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_location, context)
+				message_to_send = bot_replies['catagories_done'] % (str(user_categories))
+			main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+			update.message.reply_text(message_to_send, parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
+
+
+	def add_category_handler(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		chat_id = update.message.chat_id
+		category = Utility_Obj.get_tmp_category(update.message.chat_id, context)
+		Utility_Obj.set_user_category(chat_id, category, context)
+		user_categories = Utility_Obj.get_user_categories(update.message.chat.id, context)
+		if len(user_categories) != 3:
+			update.message.reply_text(bot_replies['catagory_added'] % category, parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+			return 0
+		else:
+			Utility_Obj.set_categories_done(chat_id, context)
+			if not Utility_Obj.has_done_location(chat_id, context):
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_location, context)
+				
+				message_to_send = bot_replies['catagories_done'] % (str(user_categories))
+			else:
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+				tupla_location = Utility_Obj.get_user_location(chat_id, context)
+				message_to_send = bot_replies['all_done'] % (str(user_categories), str(tupla_location))
+				Utility_Obj.post_shop_details(chat_id, context)
+			main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+			update.message.reply_text(message_to_send, parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
+
+
+	def check_user_categories_handler(self, update, context):
+		chat_id = update.message.chat_id
+		user_categories = Utility_Obj.get_user_categories(chat_id, context)
 		try:
-			#print(msg)
-			#print(self.is_set_categoria, self.is_set_location)
-			content_type, chat_type, chat_id = telepot.glance(msg)
-			
-			if not self.Utils_obj.is_user_just_in_db(chat_id):	self.Utils_obj.registerAnUser(chat_id)
-			#print(self.Utils_obj.user_has_done(chat_id))
-			# Per ora si gestisce solo l'accesso al bot in un gruppo o supergruppo
-			if 'chat' in msg and 'group' in chat_type and not self.Utils_obj.user_has_done(chat_id):
-				# se supergruppo passo come descrizione l'username del gruppo
-				if chat_type == 'supergroup':
-					self.is_super_group_flag = True
-					self.username = msg['chat']['username']
+			Utility_Obj.set_telegram_link(update, context)
+			chat_id = update.message.chat_id
+			user_categories = Utility_Obj.get_user_categories(chat_id, context)
+			if len(user_categories) != 0:
+				if Utility_Obj.has_done_location(chat_id, context):
+					Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+				else:
+					Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_location, context)
+				main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+				Utility_Obj.set_categories_done(chat_id, context)
+				update.message.reply_text(bot_replies['catagories_done'] % str(user_categories), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+				if Utility_Obj.has_done_location(chat_id, context):
+					user_location = Utility_Obj.get_user_location(chat_id, context)
+					update.message.reply_text(bot_replies['all_done'] % (str(user_categories), str(user_location)), parse_mode=ParseMode.MARKDOWN, reply_markup=main_keyboard, disable_web_page_preview=True)
+					Utility_Obj.post_shop_details(chat_id, context)
+				return ConversationHandler.END
+			else:
+				update.message.reply_text(bot_replies['category_error_message'], parse_mode=ParseMode.MARKDOWN, reply_markup=categories_keyboard, disable_web_page_preview=True)
+				return 0
+		except Exception as e:	print(str(e))
 
-				(first_name, group_title) = (msg['from']['first_name'], msg['chat']['title'])
-				self.group_title = group_title
-				try:	
-					self.telegram_link = self.bot.exportChatInviteLink(chat_id)
-					print(self.telegram_link)
-				except:	pass
-				if not self.is_set_location or not self.is_set_categoria:
-					
-					# Si tratta di messaggio testuale
-					if content_type == 'text':
-						chat_message = msg['text']
-						# hai premuto uno dei bottoni della tastiera principale
-						if chat_message in [j for i in self.main_keyboard for j in i]:
-							self.main_keyboard_handler(chat_id, chat_message)
-						elif self.location_error_step == 1:
-							try:
-								address , city , postcode = chat_message.split(',')
-								self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username,address = address, city = city, postcode = postcode, telegram = self.telegram_link)
-								toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(chat_message) + "*."
-								self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-								self.resetAllVariables()
-								self.Utils_obj.stop_user(chat_id)
-								self.location_error_step = 0
-							except:
-								self.bot.sendMessage(chat_id, text= self.location_error_message, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-								self.location_error_step = 1
-						elif chat_message in [j for i in self.yes_no_keyboard for j in i] and self.webSiteStep == 1:
-							if chat_message == self.yes_button:
-								self.webSiteStep = 2
-								self.bot.sendMessage(chat_id, text="Inserisci il link al tuo sito web", reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-							else:
-								self.bot.sendMessage(chat_id, text = self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
-								self.webSiteStep = 0
-						elif self.webSiteStep == 2:
-							self.webSiteName = chat_message
-							self.bot.sendMessage(chat_id, text = "*Sito Web impostato con successo*\n"+self.description_message, reply_markup={'keyboard': self.main_keyboard}, parse_mode = 'Markdown')
-							self.webSiteStep = 0
-						elif chat_message in [j for i in self.yes_no_keyboard for j in i]:
-							self.yes_no_handler(chat_id, chat_message)
-						elif chat_message in [j for i in self.categories_keyboard for j in i]:
-							self.category_handler(chat_id, chat_message)
-						else:
-							self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+	def location_main_handler(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		update.message.reply_text(bot_replies['position_message'], parse_mode=ParseMode.MARKDOWN, reply_markup = ReplyKeyboardRemove(), disable_web_page_preview=True)
+		return 2
 
-					# mi hai inviato la posizione
-					elif content_type == 'location' and self.i_can_send_location and not self.is_set_location:
-						self.location_handler(chat_id, msg)
-						self.i_can_send_location = False
-					#  Messaggio di benvenuto appena si accede al bot
-					elif content_type == 'group_chat_created':
-						self.send_welcome_message(chat_id, first_name, group_title)
-					elif content_type == 'new_chat_member':	pass
-					elif content_type == 'new_chat_photo':	pass
 
-					#  Per qualsiasi altro caso inviami la tastiera principale
-					else:
-						self.bot.sendMessage(chat_id, text=self.main_message, reply_markup={'keyboard': self.main_keyboard},parse_mode= 'Markdown')
+	def set_user_location_handler(self, update, context):
+		try:
+			Utility_Obj.set_telegram_link(update, context)
+			chat_id = update.message.chat_id
+			location = update.message.location
+			tupla_location = (latitude, longitude) = (location.latitude, location.longitude)
+			city, address, cap = Utility_Obj.reverse_location(*tupla_location)
+			if city != None and address != None and cap != None:
+				Utility_Obj.set_user_location(chat_id, tupla_location, context)
+				Utility_Obj.set_location_done(chat_id, context)
+				if Utility_Obj.has_done_categories(chat_id, context):
+					Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+					user_categories = Utility_Obj.get_user_categories(chat_id, context)
 
-				elif self.is_set_categoria and self.is_set_location:
-					lat, lng = self.myLocation
-					status_code = self.Utils_obj.post_shop_details(self.group_title, self.added_categories, self.webSiteName,self.username, lat, lng, telegram = self.telegram_link)
-					if status_code == 200: 
-						toSend = "Tutto impostato con successo:\nCategorie del negozio: *" + str(self.added_categories) + "*\nPosizione del negozio: *" + str(self.myLocation) + "*."
-						self.bot.sendMessage(chat_id, text= toSend, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-						self.resetAllVariables()
-						self.Utils_obj.stop_user(chat_id)
-					else:
-						self.bot.sendMessage(chat_id, text= self.location_error_message, reply_markup = ReplyKeyboardRemove(),parse_mode= 'Markdown')
-						self.location_error_step = 1
-				
-				
-		except telepot.exception.BotWasKickedError as e:
-			print("Sei stato buttato fuori dal gruppo")
-		except Exception as e:
-			if "No suggested keys" in str(e):	pass
-			elif "title" in str(e):	pass
-			elif 'supergroup' in str(e):	pass
-			print("Eccezione non gestita: " + str(e))
+					message_to_send = bot_replies['all_done'] % (str(user_categories), str(tupla_location))
+					Utility_Obj.post_shop_details(chat_id, context)
+				else:
+					Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_categories, context)
+					message_to_send = bot_replies['location_done'] % (address + " ("+ cap +")", city)
+				main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+				update.message.reply_text(message_to_send, parse_mode=ParseMode.MARKDOWN, reply_markup = main_keyboard, disable_web_page_preview=True)
+				return ConversationHandler.END
+			else:
+				update.message.reply_text(bot_replies['location_error_message'], parse_mode=ParseMode.MARKDOWN, reply_markup = ReplyKeyboardRemove(), disable_web_page_preview=True)
+				return 3
+		except Exception as e:	print(str(e))
+
+	def manual_location_insertion_handler(self, update, context):
+		Utility_Obj.set_telegram_link(update, context)
+		chat_message = update.message.text
+		chat_id = update.message.chat.id
+		try:
+			tupla_location = address, cap, city = chat_message.split(',')
+			Utility_Obj.set_user_location(chat_id, tupla_location, context)
+			Utility_Obj.set_location_done(chat_id, context)
+			if Utility_Obj.has_done_categories(chat_id, context):
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_empty, context)
+				user_categories = Utility_Obj.get_user_categories(chat_id, context)
+
+				message_to_send = bot_replies['all_done'] % (str(user_categories), str(tupla_location))
+				Utility_Obj.post_shop_details(chat_id, context)
+			else:
+				Utility_Obj.set_main_keyboard_by_chat_id(chat_id, main_keyboard_only_categories, context)
+				message_to_send = bot_replies['location_done'] % (address + " ("+ cap +")", city)
+			main_keyboard = Utility_Obj.get_main_keyboard_by_chat_id(chat_id, context)
+			update.message.reply_text(message_to_send, parse_mode=ParseMode.MARKDOWN, reply_markup = main_keyboard, disable_web_page_preview=True)
+			return ConversationHandler.END
+		except:	# cannot retrieve tupla_location text
+			update.message.reply_text(bot_replies['location_error_message'], parse_mode=ParseMode.MARKDOWN, reply_markup = ReplyKeyboardRemove(), disable_web_page_preview=True)
+			return 3
+
+	def main_conversation_handler(self):
+		main_conversation_handler = ConversationHandler(
+            [	# Entry Points
+            	MessageHandler(Filters.regex('^' + bot_buttons['category'] +'$'),self.category_main_handler),
+            	MessageHandler(Filters.regex('^' + bot_buttons['location'] +'$'),self.location_main_handler),
+        		MessageHandler(Filters.text,unknown_function),
+        		MessageHandler(Filters.location,self.set_user_location_handler),
+            ], 
+            {
+            	0: [	# Starting main handler
+            		MessageHandler(Filters.regex('^' + bot_buttons['stop_button'] +'$'), self.check_user_categories_handler),
+            		MessageHandler(Filters.text, self.filter_categories_handler),
+            	],
+            	1: [	# category_yes_no
+            		MessageHandler(Filters.regex('^' + bot_buttons['yes_category'] +'$'),self.add_category_handler),
+            		MessageHandler(Filters.regex('^' + bot_buttons['no_category'] +'$'),self.category_main_handler),
+            		MessageHandler(Filters.text, self.filter_categories_handler),
+            	],
+            	2:[		# Location
+            		MessageHandler(Filters.text,unknown_function),
+            		MessageHandler(Filters.location,self.set_user_location_handler),
+            	],
+            	3: [# error on location - manual insertion
+            		MessageHandler(Filters.text,self.manual_location_insertion_handler),
+            		MessageHandler(Filters.location,self.set_user_location_handler),
+            	]  	
+            },[])
+		return main_conversation_handler
+
+
+
+	def preamble_conversation_handler(self):
+		preamble_conversation_handler = ConversationHandler(
+            [	# Entry Points
+            	MessageHandler(Filters.regex('^' + bot_buttons['yes'] +'$'),self.you_have_website),
+            	MessageHandler(Filters.regex('^' + bot_buttons['no'] +'$'),self.yout_dont_have_website),
+            ], 
+            {
+            	0:[	
+            		MessageHandler(Filters.text,unknown_function),
+            	],
+            	1:[	# state for register website
+            		MessageHandler(Filters.text,self.register_website_handler)
+            	],         	
+            },[])
+		return preamble_conversation_handler
+
+	
+	def register_all_handlers(self, dp):
+		dp.add_handler(CommandHandler('start', self.start))
+		dp.add_handler(MessageHandler(Filters.status_update, self.start))
+		dp.add_handler(self.preamble_conversation_handler())
+		dp.add_handler(self.main_conversation_handler())
+		dp.add_handler(MessageHandler(Filters.text, unknown_function))
 
 	def main(self):
-		print("In Loop...")
-		MessageLoop(self.bot, self.main_handler).run_as_thread()
+		updater = Updater(BOT_TOKEN,  use_context=True)
+		dp = updater.dispatcher
+
+		self.register_all_handlers(dp)
 		
-		while True:	time.sleep(1)
-
-
+		print("In Loop")
+		updater.start_polling()
+		updater.idle()
 
 if __name__ == '__main__':
-	Bot = Bot()
-	Bot.main()
+	Bot().main()
 
-
-
+#except Exception as e:print(str(e))

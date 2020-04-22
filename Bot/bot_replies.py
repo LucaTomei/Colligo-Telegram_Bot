@@ -10,7 +10,9 @@ from utilities import Utility
 Utility_Obj = Utility()
 
 
-BOT_TOKEN = "1140474924:AAEEt2LD6Hg0TRXZDZU7HoHullUtEqNQAPc"	# t.me/Colligo_Development_Bot
+BOT_TOKEN = "1114441197:AAFJ0w7kUPtacw0DuFJzDaa_0BHqfbAmj8k"		# t.me/ColligoBot
+BOT_DEV_TOKEN = "1140474924:AAEEt2LD6Hg0TRXZDZU7HoHullUtEqNQAPc"	# t.me/Colligo_Development_Bot
+
 Bot_Obj = Bot(BOT_TOKEN)
 
 #---------[Some Strings]---------
@@ -102,7 +104,7 @@ def unknown_function(update, context):
 		group_title = update.message.chat.title
 		Utility_Obj.set_user_data(chat_id, context, main_keyboard, group_title)
 		telegram_link = Utility_Obj.set_telegram_link(update, context)
-		print("has_done", Utility_Obj.check_if_user_has_done(chat_id, context))
+		#print("has_done", Utility_Obj.check_if_user_has_done(chat_id, context))
 		if not Utility_Obj.check_if_user_has_done(chat_id, context):
 			if 'group' in update.message.chat.type:
 				if Utility_Obj.has_done_location(chat_id, context) and Utility_Obj.has_done_categories(chat_id, context):
@@ -116,7 +118,6 @@ def unknown_function(update, context):
 				context.bot.send_message(chat_id=chat_id, text = bot_replies['no_access_here'], reply_markup=ReplyKeyboardRemove(),  parse_mode = ParseMode.MARKDOWN)
 			return ConversationHandler.END
 		else:
-			print("Fine Cazzo")
 			return ConversationHandler.END
 	except Exception as e:	print(str(e))
 

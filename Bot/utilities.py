@@ -147,7 +147,7 @@ class Utility(object):
 		context = context.user_data[chat_id]
 		try:
 			latitude, longitude = context['user_location']
-			print(latitude, longitude)
+			#print(latitude, longitude)
 			(city, address, cap) = self.reverse_location(latitude, longitude)
 		except:
 			address, cap, city = context['user_location']
@@ -166,10 +166,10 @@ class Utility(object):
 		website = context['user_website']	# if you have a website
 		if website != '':	to_post.update({'website':website})
 		
-		print("to_post", to_post)
-		post_url = "http://localhost:5000/shops"#self.base_request_url + '/shops'
+		#print("to_post", to_post)
+		post_url = self.base_request_url + '/shops' #"http://localhost:5000/shops" for test
 		response = requests.post(url = post_url, json = to_post)
-		print(response.status_code, response.text)
+		#print(response.status_code, response.text)
 		self.set_all_done(chat_id, context_to_set)
 		return response.status_code
 
