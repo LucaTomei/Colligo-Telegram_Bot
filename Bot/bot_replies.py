@@ -13,6 +13,8 @@ Utility_Obj = Utility()
 BOT_TOKEN = "1114441197:AAFJ0w7kUPtacw0DuFJzDaa_0BHqfbAmj8k"		# t.me/ColligoBot
 BOT_DEV_TOKEN = "1140474924:AAEEt2LD6Hg0TRXZDZU7HoHullUtEqNQAPc"	# t.me/Colligo_Development_Bot
 
+#BOT_TOKEN = BOT_DEV_TOKEN
+
 Bot_Obj = Bot(BOT_TOKEN)
 
 #---------[Some Strings]---------
@@ -93,7 +95,7 @@ yes_no_categories_keyboard = ReplyKeyboardMarkup([
 categories_names_list = Utility_Obj.get_all_merchant_categories()	# Contains all categories names
 
 
-categories_keyboard = makeAKeyboard(categories_names_list, 4)
+categories_keyboard = makeAKeyboard(categories_names_list, 5)
 
 #---------[Useful Functions]---------
 def unknown_function(update, context):
