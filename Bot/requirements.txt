@@ -1,4 +1,4 @@
 geopy==1.21.0
 python-telegram-bot==12.5.1
-requests==2.22.0
+requests==2.31.0
 googlemaps==4.2.0
